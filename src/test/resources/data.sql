@@ -20,6 +20,7 @@ insert into character_friends (source_id, friend_id) values
 
 -- Luke Appears in
 insert into character_appears_in (character_id, appears_in) values
+    ('1000', 3),
     ('1000', 4),
     ('1000', 5),
     ('1000', 6);
@@ -30,9 +31,9 @@ insert into character_friends (source_id, friend_id) values
 
 -- Vader Appears in
 insert into character_appears_in (character_id, appears_in) values
+    ('1001', 3),
     ('1001', 4),
-    ('1001', 5),
-    ('1001', 6);
+    ('1001', 5);
 
 -- Solo's friends
 insert into character_friends (source_id, friend_id) values
@@ -42,6 +43,7 @@ insert into character_friends (source_id, friend_id) values
 
 -- Solo Appears in
 insert into character_appears_in (character_id, appears_in) values
+    ('1002', 3),
     ('1002', 4),
     ('1002', 5),
     ('1002', 6);
@@ -55,6 +57,7 @@ insert into character_friends (source_id, friend_id) values
 
 -- Leia Appears in
 insert into character_appears_in (character_id, appears_in) values
+    ('1003', 3),
     ('1003', 4),
     ('1003', 5),
     ('1003', 6);
@@ -65,7 +68,7 @@ insert into character_friends (source_id, friend_id) values
 
 -- Wilhuff Appears in
 insert into character_appears_in (character_id, appears_in) values
-    ('1004', 4);
+    ('1004', 3);
 
 -- C3PO's friends
 insert into character_friends (source_id, friend_id) values
@@ -76,9 +79,10 @@ insert into character_friends (source_id, friend_id) values
 
 -- C3PO Appears in
 insert into character_appears_in (character_id, appears_in) values
-    ('2001', 4),
-    ('2001', 5),
-    ('2001', 6);
+    ('2000', 3),
+    ('2000', 4),
+    ('2000', 5),
+    ('2000', 6);
 
 -- R2's friends
 insert into character_friends (source_id, friend_id) values
@@ -88,6 +92,7 @@ insert into character_friends (source_id, friend_id) values
 
 -- R2 Appears in
 insert into character_appears_in (character_id, appears_in) values
+    ('2001', 3),
     ('2001', 4),
     ('2001', 5),
     ('2001', 6);
