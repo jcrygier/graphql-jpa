@@ -3,7 +3,7 @@ GraphQL for JPA
 
 If you're already using JPA, then you already have a schema defined...don't define it again just for GraphQL!
 
-This is a simple project to extend [graphql-java!](https://github.com/andimarek/graphql-java) and have it derive the
+This is a simple project to extend [graphql-java](https://github.com/andimarek/graphql-java) and have it derive the
 schema from a JPA model.  It also implements an execution platform to generate and run JPA queries based on
 GraphQL queries.
 
@@ -29,7 +29,7 @@ view, similar to that of Spring.
 Each model (say Human or Droid - see tests) will have two representations in the generated schema:
 
 - One that models the Entities directly (Human or Droid)
-- One that wraps the Entity in a page request (HumanPage or DroidPage)
+- One that wraps the Entity in a page request (HumanConnection or DroidConnection)
 
 This allows you to query for the "Page" version of any Entity, and return metadata (like total count) alongside of the
 actual requested data.  For example:
@@ -60,7 +60,7 @@ Will return:
 Of course, an extra query is needed to get the total elements, so if you have not requested 'totalPages' or 'totalElements'
 this query will not be executed.
 
-NOTE: The "Connection" name is used here for further extension (Aggregations, Sorting, etc...).  The name is borrowed
+NOTE: The "Connection" name is used here for further extension (Aggregations, etc...).  The name is borrowed
 from suggestions by Facebook developers: https://github.com/facebook/graphql/issues/4
 
 Aggregations
