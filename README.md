@@ -20,6 +20,19 @@ Schema Generation
 Using a JPA Entity Manager, the models are introspected, and a GraphQL Schema is built.  With this GraphQL schema,
 graphql-java does most of the work, except for querying.
 
+Schema Documentation
+--------------------
+
+A major part of GraphQL is the ability to have a well documented schema.  This project takes advantage of this, and produces
+descriptions for each Entity in the schema.  For the built in types (e.g. PaginationObject) these are rather hard-coded
+without much control from the end user.
+
+However, for each Entity / Member that is in your JPA schema, you can document what it's for.  These descriptions are controlled
+by the `@SchemaDocumentation` attribute on either a class level, or a field level of your model.
+
+These descriptions will show up in the GraphiQL browser automatically, and generally helps when providing an API to your
+end-users.  See the GraphiQL section below for more details.
+
 Pagination
 ----------
 
