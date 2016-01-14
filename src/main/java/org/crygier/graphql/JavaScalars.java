@@ -20,6 +20,11 @@ public class JavaScalars {
         }
 
         @Override
+        public Object coerceValue(Object input) {
+            return coerce(input);
+        }
+
+        @Override
         public Object coerceLiteral(Object input) {
             if (!(input instanceof IntValue)) return null;
             return new Long(((IntValue) input).getValue());

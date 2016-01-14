@@ -34,7 +34,10 @@ public class GraphQLExecutor {
 
     @Transactional
     public ExecutionResult execute(String query, Map<String, Object> arguments) {
-        return graphQL.execute(query, (Object) null, arguments);
+        if (arguments == null)
+            return graphQL.execute(query);
+        else
+            return graphQL.execute(query, (Object) null, arguments);
     }
 
 }

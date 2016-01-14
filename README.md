@@ -85,3 +85,15 @@ Query Injectors
 ---------------
 
 Not yet implemented.  Main use case would be to intercept query execution for security purposes.
+
+GraphiQL
+--------
+
+GraphiQL (https://github.com/graphql/graphiql) has been introduced for simple testing (in the test package, as I don't
+want to assume your web stack).  Simply launch TestApplication as a Java Application, and navigate to http://localhost:8080/
+to launch.  You will notice a 'Docs' button at the upper right, that when expanded will show you the running schema (Star
+Wars in this demo).
+
+You can enter GraphQL queries in the left pannel, and hit the run button, and the results should come back in the right
+panel.  If your query has variables, there is a minimized panel at the bottom left.  Simply click on this to expand, and
+type in your variables as a JSON string (don't forget to quote the keys!).  Enjoy!

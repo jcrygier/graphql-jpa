@@ -10,6 +10,11 @@ public class IdentityCoercing implements Coercing{
     }
 
     @Override
+    public Object coerceValue(Object input) {
+        return input;
+    }
+
+    @Override
     public Object coerceLiteral(Object input) {
         return input;
     }

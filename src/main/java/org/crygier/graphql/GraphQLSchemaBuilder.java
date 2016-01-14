@@ -29,7 +29,7 @@ public class GraphQLSchemaBuilder {
     }
 
     private GraphQLObjectType getQueryType() {
-        GraphQLObjectType.Builder queryType = GraphQLObjectType.newObject().name("QueryType-JPA");
+        GraphQLObjectType.Builder queryType = GraphQLObjectType.newObject().name("QueryType_JPA");
         queryType.fields(entityManager.getMetamodel().getEntities().stream().map(this::getQueryFieldDefinition).collect(Collectors.toList()));
         queryType.fields(entityManager.getMetamodel().getEntities().stream().map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
 

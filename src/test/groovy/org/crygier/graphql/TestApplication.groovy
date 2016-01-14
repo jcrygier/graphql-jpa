@@ -23,4 +23,9 @@ class TestApplication {
         return new GraphQLExecutor();
     }
 
+    @Bean
+    public GraphQlController() {
+        return new GraphQlController();
+    }
+
 }
