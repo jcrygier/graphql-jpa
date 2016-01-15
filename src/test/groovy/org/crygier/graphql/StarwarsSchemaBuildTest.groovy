@@ -1,5 +1,6 @@
 package org.crygier.graphql
 
+import graphql.Scalars
 import graphql.schema.GraphQLSchema
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationContextLoader
@@ -31,6 +32,10 @@ class StarwarsSchemaBuildTest extends Specification {
 
         then:   "Ensure that collections can be queried on"
         schema.getQueryType().getFieldDefinition("Droid").getArgument("appearsIn")
+
+        then:   "Ensure Subobjects may be queried upon"
+        schema.getQueryType().getFieldDefinition("CodeList").getArguments().size() == 6
+        schema.getQueryType().getFieldDefinition("CodeList").getArgument("code").getType() == Scalars.GraphQLString
     }
 
 }

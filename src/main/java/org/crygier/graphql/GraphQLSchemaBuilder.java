@@ -11,7 +11,11 @@ import javax.persistence.metamodel.*;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GraphQLSchemaBuilder {
 
@@ -92,21 +96,47 @@ public class GraphQLSchemaBuilder {
         GraphQLType type = getAttributeType(attribute);
 
         if (type instanceof GraphQLOutputType) {
+            List<GraphQLArgument> arguments = new ArrayList<>();
+            arguments.add(GraphQLArgument.newArgument().name("orderBy").type(orderByDirectionEnum).build());            // Always add the orderBy argument
+
+            // Get the fields that can be queried on (i.e. Simple Types, no Sub-Objects)
+            if (attribute instanceof SingularAttribute && attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.BASIC) {
+                EntityType foreignType = (EntityType) ((SingularAttribute) attribute).getType();
+                Stream<Attribute> attributes = findBasicAttributes(foreignType.getAttributes());
+
+                attributes.forEach(it -> {
+                    arguments.add(GraphQLArgument.newArgument().name(it.getName()).type((GraphQLInputType) getAttributeType(it)).build());
+                });
+            }
+
             return GraphQLFieldDefinition.newFieldDefinition()
                     .name(attribute.getName())
                     .description(getSchemaDocumentation(attribute.getJavaMember()))
                     .type((GraphQLOutputType) type)
-                    .argument(GraphQLArgument.newArgument().name("orderBy").type(orderByDirectionEnum).build())
+                    .argument(arguments)
                     .build();
         }
 
         throw new IllegalArgumentException("Attribute " + attribute + " cannot be mapped as an Output Argument");
     }
 
+    private Stream<Attribute> findBasicAttributes(Collection<Attribute> attributes) {
+        return attributes.stream().filter(it -> it.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC);
+    }
+
+
     private GraphQLType getAttributeType(Attribute attribute) {
         if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC) {
             if (String.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLString;
+            else if (Integer.class.isAssignableFrom(attribute.getJavaType()) || int.class.isAssignableFrom(attribute.getJavaType()))
+                return Scalars.GraphQLInt;
+            else if (Float.class.isAssignableFrom(attribute.getJavaType()) || float.class.isAssignableFrom(attribute.getJavaType()))
+                return Scalars.GraphQLFloat;
+            else if (Long.class.isAssignableFrom(attribute.getJavaType()) || long.class.isAssignableFrom(attribute.getJavaType()))
+                return Scalars.GraphQLLong;
+            else if (Boolean.class.isAssignableFrom(attribute.getJavaType()) || boolean.class.isAssignableFrom(attribute.getJavaType()))
+                return Scalars.GraphQLBoolean;
         } else if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_MANY || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_MANY) {
             EntityType foreignType = (EntityType) ((PluralAttribute) attribute).getElementType();
             return new GraphQLList(new GraphQLTypeReference(foreignType.getName()));
