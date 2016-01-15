@@ -122,7 +122,8 @@ public class GraphQLSchemaBuilder {
     }
 
     private boolean isValidInput(Attribute attribute) {
-        return attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC;
+        return attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC ||
+                attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ELEMENT_COLLECTION;
     }
 
     private String getSchemaDocumentation(Member member) {
@@ -135,7 +136,7 @@ public class GraphQLSchemaBuilder {
 
     private String getSchemaDocumentation(AnnotatedElement annotatedElement) {
         if (annotatedElement != null) {
-            SchemaDocumentation schemaDocumentation = ((AnnotatedElement) annotatedElement).getAnnotation(SchemaDocumentation.class);
+            SchemaDocumentation schemaDocumentation = annotatedElement.getAnnotation(SchemaDocumentation.class);
             return schemaDocumentation != null ? schemaDocumentation.value() : null;
         }
 

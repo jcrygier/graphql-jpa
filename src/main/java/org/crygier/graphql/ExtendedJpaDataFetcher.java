@@ -58,7 +58,7 @@ public class ExtendedJpaDataFetcher extends JpaDataFetcher {
 
         SingularAttribute idAttribute = entityType.getId(Object.class);
         query.select(cb.count(root.get(idAttribute.getName())));
-        List<Predicate> predicates = field.getArguments().stream().map(it -> cb.equal(root.get(it.getName()), convertValue(environment, it.getValue()))).collect(Collectors.toList());
+        List<Predicate> predicates = field.getArguments().stream().map(it -> cb.equal(root.get(it.getName()), convertValue(environment, it, it.getValue()))).collect(Collectors.toList());
         query.where(predicates.toArray(new Predicate[predicates.size()]));
 
         return entityManager.createQuery(query);

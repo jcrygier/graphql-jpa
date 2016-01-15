@@ -1,5 +1,6 @@
 package org.crygier.graphql
 
+import org.crygier.graphql.model.starwars.Episode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationContextLoader
 import org.springframework.context.annotation.Configuration
@@ -215,9 +216,9 @@ class StarwarsQueryExecutorTest extends Specification {
                         [
                                 name:'R2-D2',
                                 friends:[
-                                        [ name:'Luke Skywalker', appearsIn:['EMPIRE_STRIKES_BACK', 'RETURN_OF_THE_JEDI', 'THE_FORCE_AWAKENS'], friends:[['name:Han Solo'], [name:'Leia Organa'], [name:'C-3PO'], [name:'R2-D2']]],
-                                        [ name:'Han Solo', appearsIn:['EMPIRE_STRIKES_BACK', 'RETURN_OF_THE_JEDI', 'THE_FORCE_AWAKENS'], friends:[[name:'Luke Skywalker'], [name:'Leia Organa'], [name:'R2-D2']]],
-                                        [ name:'Leia Organa', appearsIn:['EMPIRE_STRIKES_BACK', 'RETURN_OF_THE_JEDI', 'THE_FORCE_AWAKENS'], friends:[[name:'Luke Skywalker'], [name:'Han Solo'], [name:'C-3PO'], [name:'R2-D2']]]
+                                        [ name:'Luke Skywalker', appearsIn:['A_NEW_HOPE', 'EMPIRE_STRIKES_BACK', 'RETURN_OF_THE_JEDI', 'THE_FORCE_AWAKENS'], friends:[['name:Han Solo'], [name:'Leia Organa'], [name:'C-3PO'], [name:'R2-D2']]],
+                                        [ name:'Han Solo', appearsIn:['A_NEW_HOPE', 'EMPIRE_STRIKES_BACK', 'RETURN_OF_THE_JEDI', 'THE_FORCE_AWAKENS'], friends:[[name:'Luke Skywalker'], [name:'Leia Organa'], [name:'R2-D2']]],
+                                        [ name:'Leia Organa', appearsIn:['A_NEW_HOPE', 'EMPIRE_STRIKES_BACK', 'RETURN_OF_THE_JEDI', 'THE_FORCE_AWAKENS'], friends:[[name:'Luke Skywalker'], [name:'Han Solo'], [name:'C-3PO'], [name:'R2-D2']]]
                                 ]
                         ]
                 ]
@@ -248,8 +249,8 @@ class StarwarsQueryExecutorTest extends Specification {
                         totalPages: 3,
                         totalElements: 5,
                         content: [
-                                [ name: 'Luke Skywalker' ],
-                                [ name: 'Darth Vader' ]
+                                [ name: 'Darth Vader' ],
+                                [ name: 'Luke Skywalker' ]
                         ]
                 ]
         ]
@@ -286,6 +287,33 @@ class StarwarsQueryExecutorTest extends Specification {
 
         then:
         result == expected
+    }
+
+    def 'Query by Collection of Enums at root level'() {
+        // Semi-proper JPA: select distinct h from Human h join h.appearsIn ai where ai in (:episodes)
+
+        given:
+        def query = '''
+        {
+          Human(appearsIn: [THE_FORCE_AWAKENS]) {
+            name
+            appearsIn
+          }
+        }
+        '''
+        def expected = [
+                Human: [
+                    [ name: 'Han Solo', appearsIn: [Episode.A_NEW_HOPE, Episode.EMPIRE_STRIKES_BACK, Episode.RETURN_OF_THE_JEDI, Episode.THE_FORCE_AWAKENS] ],
+                    [ name: 'Leia Organa', appearsIn: [Episode.A_NEW_HOPE, Episode.EMPIRE_STRIKES_BACK, Episode.RETURN_OF_THE_JEDI, Episode.THE_FORCE_AWAKENS] ],
+                    [ name: 'Luke Skywalker', appearsIn: [Episode.A_NEW_HOPE, Episode.EMPIRE_STRIKES_BACK, Episode.RETURN_OF_THE_JEDI, Episode.THE_FORCE_AWAKENS]]
+                ]
+        ]
+
+        when:
+        def result = executor.execute(query).data
+
+        then:
+        result == expected;
     }
 
 }

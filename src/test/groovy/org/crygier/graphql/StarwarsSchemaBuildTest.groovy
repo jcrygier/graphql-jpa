@@ -26,8 +26,11 @@ class StarwarsSchemaBuildTest extends Specification {
         when:
         GraphQLSchema schema = builder.getGraphQLSchema();
 
-        then:
+        then:   "Ensure the result is returned"
         schema;
+
+        then:   "Ensure that collections can be queried on"
+        schema.getQueryType().getFieldDefinition("Droid").getArgument("appearsIn")
     }
 
 }
