@@ -1,11 +1,15 @@
 package org.crygier.graphql
 
+import groovy.json.JsonOutput
 import org.crygier.graphql.model.starwars.Episode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationContextLoader
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.transaction.annotation.Transactional
 import spock.lang.Specification
+
+import javax.persistence.EntityManager
 
 @Configuration
 @ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
@@ -314,6 +318,51 @@ class StarwarsQueryExecutorTest extends Specification {
 
         then:
         result == expected;
+    }
+
+    def 'Query by restricting sub-object'() {
+        given:
+        def query = '''
+        {
+          Human {
+            name
+            gender(code: "Male") {
+              description
+            }
+          }
+        }
+        '''
+        def expected = [
+                Human: [
+                        [ name: 'Darth Vader', gender: [ description: "Male" ] ],
+                        [ name: 'Wilhuff Tarkin', gender: [ description: "Male" ] ],
+                        [ name: 'Han Solo', gender: [ description: "Male" ] ],
+                        [ name: 'Luke Skywalker', gender: [ description: "Male" ]]
+                ]
+        ]
+
+        when:
+        def result = executor.execute(query).data
+
+        then:
+        result == expected;
+    }
+
+    @Autowired
+    private EntityManager em;
+
+    @Transactional
+    def 'JPA Sample Tester'() {
+        when:
+        //def query = em.createQuery("select h.id, h.name, h.gender.description from Human h where h.gender.code = 'Male'");
+        def query = em.createQuery("select h, h.friends from Human h");
+        //query.setParameter(1, Episode.THE_FORCE_AWAKENS);
+        //query.setParameter("episodes", EnumSet.of(Episode.THE_FORCE_AWAKENS));
+        def result = query.getResultList();
+        println JsonOutput.prettyPrint(JsonOutput.toJson(result));
+
+        then:
+        result;
     }
 
 }

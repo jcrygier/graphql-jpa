@@ -1,10 +1,25 @@
+buildscript {
+	repositories {
+		jcenter()
+	}
+}
+
+plugins {
+    id "com.jfrog.bintray" version "1.6"
+}
+
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+group = 'org.jfrog.example.gradle'
+version = '0.1'
 
 jar {
     baseName = 'graphql-jpa'
-    version = '0.0.1-SNAPSHOT'
+    version = project.version
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -41,6 +56,48 @@ dependencies {
     //testRuntime 'org.hibernate:hibernate-validator:4.3.0.Final'
 }
 
+bintray {
+    user = project.property('bintrayUser') ?: System.getenv('BINTRAY_USER')
+    key = project.property('bintrayApiKey') ?: System.getenv('BINTRAY_API_KEY')
+    publications = ['MyPublication']
+    pkg {
+        repo = 'maven'
+        name = 'GraphQL-JPA'
+        userOrg = user
+        desc = 'JPA Implementation of GraphQL (builds on graphql-java)'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/jcrygier/graphql-jpa.git'
+        labels = ['graphql', 'jpa']
+        version {
+                name = project.version
+                desc = 'Initial Release'
+                released  = new Date()
+                vcsTag = '67ba677a328a12710910b4ff9185f7497d084c0a'
+                attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
+        }
+    }
+}
+
+publishing {
+	publications {
+		MyPublication(MavenPublication) {
+			from components.java
+			groupId 'com.crygier'
+    		artifactId 'graphql-jpa'
+    		version project.version
+            artifact sourcesJar 
+		}
+	}
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
 
 eclipse {
     classpath {
