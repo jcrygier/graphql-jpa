@@ -5,17 +5,17 @@ import graphql.schema.Coercing;
 public class IdentityCoercing implements Coercing{
 
     @Override
-    public Object coerce(Object input) {
+    public Object serialize(Object input) {
         return input;
     }
 
     @Override
-    public Object coerceValue(Object input) {
+    public Object parseValue(Object input) {
         return input;
     }
 
     @Override
-    public Object coerceLiteral(Object input) {
+    public Object parseLiteral(Object input) {
         return input;
     }
 

@@ -77,7 +77,7 @@ public class ExtendedJpaDataFetcher extends JpaDataFetcher {
             IntValue page = (IntValue) paginationValues.getObjectFields().stream().filter(it -> "page".equals(it.getName())).findFirst().get().getValue();
             IntValue size = (IntValue) paginationValues.getObjectFields().stream().filter(it -> "size".equals(it.getName())).findFirst().get().getValue();
 
-            return new PageInformation(page.getValue(), size.getValue());
+            return new PageInformation(page.getValue().intValue(), size.getValue().intValue());
         }
 
         return new PageInformation(1, Integer.MAX_VALUE);

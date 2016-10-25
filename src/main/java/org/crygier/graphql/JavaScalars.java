@@ -9,9 +9,9 @@ public class JavaScalars {
 
     public static GraphQLScalarType GraphQLLong = new GraphQLScalarType("Long", "Built-in Long", new Coercing() {
         @Override
-        public Object coerce(Object input) {
+        public Object serialize(Object input) {
             if (input instanceof String) {
-                return Long.parseLong((String) input);
+                return Long.valueOf((String) input);
             } else if (input instanceof Long) {
                 return input;
             } else {
@@ -20,14 +20,14 @@ public class JavaScalars {
         }
 
         @Override
-        public Object coerceValue(Object input) {
-            return coerce(input);
+        public Object parseValue(Object input) {
+            return serialize(input);
         }
 
         @Override
-        public Object coerceLiteral(Object input) {
+        public Object parseLiteral(Object input) {
             if (!(input instanceof IntValue)) return null;
-            return new Long(((IntValue) input).getValue());
+            return new Long(((IntValue) input).getValue().longValue());
         }
     });
 
