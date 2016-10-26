@@ -137,6 +137,9 @@ public class GraphQLSchemaBuilder {
                 return Scalars.GraphQLLong;
             else if (Boolean.class.isAssignableFrom(attribute.getJavaType()) || boolean.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLBoolean;
+            else if (attribute.getJavaType().isEnum()) {
+                return getTypeFromJavaType(attribute.getJavaType());
+            }
         } else if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_MANY || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_MANY) {
             EntityType foreignType = (EntityType) ((PluralAttribute) attribute).getElementType();
             return new GraphQLList(new GraphQLTypeReference(foreignType.getName()));
