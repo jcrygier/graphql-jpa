@@ -1,7 +1,9 @@
 language: java
+jdk:
+  - oraclejdk8
 deploy:
   provider: bintray
-  file: Path to a descriptor file, containing information for the Bintray upload
+  file: bintray.json
   user: jcrygier
   key:
     secure: obNe/VH/vvGr3nSpUQW7+E0XfQAA8zvkuFOM86AfRs51pxblIgLnBkGua9iuRZ8iV6s/275j/SgVV4vkoq1Bkt1ndnmEcsn0XbRuRhJH7yxDdIIclLP/kCAgRFh08ADKD2k51HsqCIjiiSs+B8V0QFQx9pcMtRMchqq/63H1I/TGHUHEpVLh/2+HkTkqFe/0LavxPi1jMt5qkqsPzyCwvE7oM5rzqKUmAbCh66yhi1ao0DkwJybtIq0yjgfKHVKydAr2O0So8kYRkRnddBxi1NkTrbcXm9kwcrM+bmS4S7eMgRWiq/oNYBD0sefYP5NySsDh+phzjIqGFxvTQvp/EfzKlupR2mogK3GjHmuyl0tII4qjrxEnlT6Pj08UvUb2jloHvckdqpj0Gz8f3Iq3/HsxVRXBMshm11dEFXqHIs6UbGQFtf5TkgP88iPt3kfh+0yAWh5EVp+YAG6HnkrTure2YC0JgiRmYHFD0lYxFQ0LoGteECNg1NpMu1lU/f0EaEy98XX+aCjW5KPSyWNEpTXo74IZsjIZEqN1mbfxvtyKc1p1ANK1oQW23FeAI0ZjnCT8FEntk1UJIZqazw2QQvCyYVawESgqFCzkpN4D6uJjU15xQKQos7tK9f1Lm6Xl47PcaA82iFYFxQji3VdC1a+vlCXWPP+XKua2OPhuAoQ=
