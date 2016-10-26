@@ -1,0 +1,14 @@
+{
+    "package": {
+        "name": "GraphQL-JPA",
+        "repo": "maven",
+        "subject": "jcrygier"
+    },
+    "version": {
+        "name": "0.2"
+    },
+    "files": [
+        {"includePattern": "build/libs/(.*)", "excludePattern": ".*/do-not-deploy/.*", "uploadPattern": "com/crygier/graphql-jpa/0.2/$1"}
+    ],
+    "publish": true
+}
