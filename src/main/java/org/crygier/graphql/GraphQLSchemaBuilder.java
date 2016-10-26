@@ -131,7 +131,8 @@ public class GraphQLSchemaBuilder {
                 return Scalars.GraphQLString;
             else if (Integer.class.isAssignableFrom(attribute.getJavaType()) || int.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLInt;
-            else if (Float.class.isAssignableFrom(attribute.getJavaType()) || float.class.isAssignableFrom(attribute.getJavaType()))
+            else if (Float.class.isAssignableFrom(attribute.getJavaType()) || float.class.isAssignableFrom(attribute.getJavaType())
+                    || Double.class.isAssignableFrom(attribute.getJavaType()) || double.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLFloat;
             else if (Long.class.isAssignableFrom(attribute.getJavaType()) || long.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLLong;
