@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -124,13 +125,14 @@ public class GraphQLSchemaBuilder {
         return attributes.stream().filter(it -> it.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC);
     }
 
-
     private GraphQLType getAttributeType(Attribute attribute) {
         if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC) {
             if (String.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLString;
             else if (Integer.class.isAssignableFrom(attribute.getJavaType()) || int.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLInt;
+            else if (Short.class.isAssignableFrom(attribute.getJavaType()) || short.class.isAssignableFrom(attribute.getJavaType()))
+                return Scalars.GraphQLShort;
             else if (Float.class.isAssignableFrom(attribute.getJavaType()) || float.class.isAssignableFrom(attribute.getJavaType())
                     || Double.class.isAssignableFrom(attribute.getJavaType()) || double.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLFloat;
@@ -138,6 +140,8 @@ public class GraphQLSchemaBuilder {
                 return Scalars.GraphQLLong;
             else if (Boolean.class.isAssignableFrom(attribute.getJavaType()) || boolean.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLBoolean;
+            else if (Date.class.isAssignableFrom(attribute.getJavaType()))
+                return JavaScalars.GraphQLDate;
             else if (attribute.getJavaType().isEnum()) {
                 return getTypeFromJavaType(attribute.getJavaType());
             }
