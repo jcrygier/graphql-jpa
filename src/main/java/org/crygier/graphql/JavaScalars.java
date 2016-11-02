@@ -1,22 +1,33 @@
 package org.crygier.graphql;
 
-import graphql.GraphQLException;
+import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+
 import graphql.language.IntValue;
+import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.GraphQLScalarType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JavaScalars {
+    static final Logger log = LoggerFactory.getLogger(JavaScalars.class);
 
-    public static GraphQLScalarType GraphQLLong = new GraphQLScalarType("Long", "Built-in Long", new Coercing() {
+    public static GraphQLScalarType GraphQLDate = new GraphQLScalarType("Date", "Date type", new Coercing() {
         @Override
         public Object serialize(Object input) {
             if (input instanceof String) {
-                return Long.valueOf((String) input);
-            } else if (input instanceof Long) {
+                return parseStringToDate((String) input);
+            } else if (input instanceof Date) {
                 return input;
-            } else {
-                throw new GraphQLException("");
+            } else if (input instanceof Long) {
+                return new Date(((Long) input).longValue());
+            } else if (input instanceof Integer) {
+                return new Date(((Integer) input).longValue());
             }
+            return null;
         }
 
         @Override
@@ -26,9 +37,22 @@ public class JavaScalars {
 
         @Override
         public Object parseLiteral(Object input) {
-            if (!(input instanceof IntValue)) return null;
-            return new Long(((IntValue) input).getValue().longValue());
+            if (input instanceof StringValue) {
+                return parseStringToDate(((StringValue) input).getValue());
+            } else if (input instanceof IntValue) {
+                BigInteger value = ((IntValue) input).getValue();
+                return new Date(value.longValue());
+            }
+            return null;
+        }
+
+        private Date parseStringToDate(String input) {
+            try {
+                return DateFormat.getInstance().parse(input);
+            } catch (ParseException e) {
+                log.warn("Failed to parse Date from input: " + input, e);
+                return null;
+            }
         }
     });
-
 }

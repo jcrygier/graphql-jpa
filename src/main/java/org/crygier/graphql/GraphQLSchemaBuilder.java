@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,8 +58,8 @@ public class GraphQLSchemaBuilder {
         GraphQLObjectType pageType = GraphQLObjectType.newObject()
                 .name(entityType.getName() + "Connection")
                 .description("'Connection' response wrapper object for " + entityType.getName() + ".  When pagination or aggregation is requested, this object will be returned with metadata about the query.")
-                .field(GraphQLFieldDefinition.newFieldDefinition().name("totalPages").description("Total number of pages calculated on the database for this pageSize.").type(JavaScalars.GraphQLLong).build())
-                .field(GraphQLFieldDefinition.newFieldDefinition().name("totalElements").description("Total number of results on the database for this query.").type(JavaScalars.GraphQLLong).build())
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("totalPages").description("Total number of pages calculated on the database for this pageSize.").type(Scalars.GraphQLLong).build())
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("totalElements").description("Total number of results on the database for this query.").type(Scalars.GraphQLLong).build())
                 .field(GraphQLFieldDefinition.newFieldDefinition().name("content").description("The actual object results").type(new GraphQLList(getObjectType(entityType))).build())
                 .build();
 
@@ -124,13 +125,14 @@ public class GraphQLSchemaBuilder {
         return attributes.stream().filter(it -> it.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC);
     }
 
-
     private GraphQLType getAttributeType(Attribute attribute) {
         if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC) {
             if (String.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLString;
             else if (Integer.class.isAssignableFrom(attribute.getJavaType()) || int.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLInt;
+            else if (Short.class.isAssignableFrom(attribute.getJavaType()) || short.class.isAssignableFrom(attribute.getJavaType()))
+                return Scalars.GraphQLShort;
             else if (Float.class.isAssignableFrom(attribute.getJavaType()) || float.class.isAssignableFrom(attribute.getJavaType())
                     || Double.class.isAssignableFrom(attribute.getJavaType()) || double.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLFloat;
@@ -138,6 +140,8 @@ public class GraphQLSchemaBuilder {
                 return Scalars.GraphQLLong;
             else if (Boolean.class.isAssignableFrom(attribute.getJavaType()) || boolean.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLBoolean;
+            else if (Date.class.isAssignableFrom(attribute.getJavaType()))
+                return JavaScalars.GraphQLDate;
             else if (attribute.getJavaType().isEnum()) {
                 return getTypeFromJavaType(attribute.getJavaType());
             }
