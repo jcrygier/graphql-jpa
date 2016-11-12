@@ -1,16 +1,9 @@
 package org.crygier.graphql;
 
-import graphql.Scalars;
-import graphql.schema.*;
-import org.crygier.graphql.annotation.SchemaDocumentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.persistence.EntityManager;
-import javax.persistence.metamodel.*;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -18,15 +11,40 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.Type;
+
+import org.crygier.graphql.annotation.SchemaDocumentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import graphql.Scalars;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLInputType;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
+
 public class GraphQLSchemaBuilder {
 
     public static final String PAGINATION_REQUEST_PARAM_NAME = "paginationRequest";
     private static final Logger log = LoggerFactory.getLogger(GraphQLSchemaBuilder.class);
 
-    private EntityManager entityManager;
+    private Metamodel metaModel;
 
-    public GraphQLSchemaBuilder(EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public GraphQLSchemaBuilder(Metamodel metaModel) {
+        this.metaModel = metaModel;
     }
 
     public GraphQLSchema getGraphQLSchema() {
@@ -38,8 +56,8 @@ public class GraphQLSchemaBuilder {
 
     private GraphQLObjectType getQueryType() {
         GraphQLObjectType.Builder queryType = GraphQLObjectType.newObject().name("QueryType_JPA").description("All encompassing schema for this JPA environment");
-        queryType.fields(entityManager.getMetamodel().getEntities().stream().map(this::getQueryFieldDefinition).collect(Collectors.toList()));
-        queryType.fields(entityManager.getMetamodel().getEntities().stream().map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
+        queryType.fields(metaModel.getEntities().stream().map(this::getQueryFieldDefinition).collect(Collectors.toList()));
+        queryType.fields(metaModel.getEntities().stream().map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
 
         return queryType.build();
     }
@@ -47,9 +65,9 @@ public class GraphQLSchemaBuilder {
     private GraphQLFieldDefinition getQueryFieldDefinition(EntityType<?> entityType) {
         return GraphQLFieldDefinition.newFieldDefinition()
                 .name(entityType.getName())
-                .description(getSchemaDocumentation( entityType.getJavaType()))
+                .description(getSchemaDocumentation(entityType.getJavaType()))
                 .type(new GraphQLList(getObjectType(entityType)))
-                .dataFetcher(new JpaDataFetcher(entityManager, entityType))
+                .dataFetcher(new JpaDataFetcher(entityType))
                 .argument(entityType.getAttributes().stream().filter(this::isValidInput).map(this::getArgument).collect(Collectors.toList()))
                 .build();
     }
@@ -67,7 +85,7 @@ public class GraphQLSchemaBuilder {
                 .name(entityType.getName() + "Connection")
                 .description("'Connection' request wrapper object for " + entityType.getName() + ".  Use this object in a query to request things like pagination or aggregation in an argument.  Use the 'content' field to request actual fields ")
                 .type(pageType)
-                .dataFetcher(new ExtendedJpaDataFetcher(entityManager, entityType))
+                .dataFetcher(new ExtendedJpaDataFetcher(entityType))
                 .argument(paginationArgument)
                 .build();
     }
@@ -142,6 +160,8 @@ public class GraphQLSchemaBuilder {
                 return Scalars.GraphQLBoolean;
             else if (Date.class.isAssignableFrom(attribute.getJavaType()))
                 return JavaScalars.GraphQLDate;
+            else if (BigDecimal.class.isAssignableFrom(attribute.getJavaType()))
+            	return Scalars.GraphQLBigDecimal;
             else if (attribute.getJavaType().isEnum()) {
                 return getTypeFromJavaType(attribute.getJavaType());
             }

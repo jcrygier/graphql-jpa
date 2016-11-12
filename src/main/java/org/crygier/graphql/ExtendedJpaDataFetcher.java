@@ -1,10 +1,10 @@
 package org.crygier.graphql;
 
-import graphql.language.Argument;
-import graphql.language.Field;
-import graphql.language.IntValue;
-import graphql.language.ObjectValue;
-import graphql.schema.DataFetchingEnvironment;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -14,16 +14,17 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
+import graphql.language.Argument;
+import graphql.language.Field;
+import graphql.language.IntValue;
+import graphql.language.ObjectValue;
+import graphql.schema.DataFetchingEnvironment;
 
 public class ExtendedJpaDataFetcher extends JpaDataFetcher {
 
-    public ExtendedJpaDataFetcher(EntityManager entityManager, EntityType<?> entityType) {
-        super(entityManager, entityType);
+    public ExtendedJpaDataFetcher(EntityType<?> entityType) {
+        super(entityType);
     }
 
     @Override
@@ -52,6 +53,8 @@ public class ExtendedJpaDataFetcher extends JpaDataFetcher {
     }
 
     private TypedQuery<Long> getCountQuery(DataFetchingEnvironment environment, Field field) {
+    	EntityManager entityManager = ((EntityManager)environment.getContext());
+    	
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root root = query.from(entityType);

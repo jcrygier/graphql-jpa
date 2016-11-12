@@ -5,12 +5,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import graphql.language.IntValue;
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
 import graphql.schema.GraphQLScalarType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JavaScalars {
     static final Logger log = LoggerFactory.getLogger(JavaScalars.class);
