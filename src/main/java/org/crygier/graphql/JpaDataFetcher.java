@@ -1,26 +1,41 @@
 package org.crygier.graphql;
 
-import graphql.language.*;
-import graphql.schema.*;
-
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.PluralAttribute;
-import javax.persistence.metamodel.SingularAttribute;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
+
+import graphql.language.Argument;
+import graphql.language.ArrayValue;
+import graphql.language.EnumValue;
+import graphql.language.Field;
+import graphql.language.StringValue;
+import graphql.language.Value;
+import graphql.language.VariableReference;
+import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLType;
+
 public class JpaDataFetcher implements DataFetcher {
 
-    protected EntityManager entityManager;
+//    protected EntityManager entityManager;
     protected EntityType<?> entityType;
 
-    public JpaDataFetcher(EntityManager entityManager, EntityType<?> entityType) {
-        this.entityManager = entityManager;
+    public JpaDataFetcher(EntityType<?> entityType) {
         this.entityType = entityType;
     }
 
@@ -30,6 +45,8 @@ public class JpaDataFetcher implements DataFetcher {
     }
 
     protected TypedQuery getQuery(DataFetchingEnvironment environment, Field field) {
+    	EntityManager entityManager = ((EntityManager)environment.getContext());
+    	
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Object> query = cb.createQuery((Class) entityType.getJavaType());
         Root root = query.from(entityType);
@@ -101,13 +118,14 @@ public class JpaDataFetcher implements DataFetcher {
     }
 
     private Attribute getAttribute(DataFetchingEnvironment environment, Argument argument) {
+    	EntityManager entityManager = ((EntityManager)environment.getContext());
         GraphQLObjectType objectType = getObjectType(environment, argument);
-        EntityType entityType = getEntityType(objectType);
+        EntityType entityType = getEntityType(entityManager, objectType);
 
         return entityType.getAttribute(argument.getName());
     }
 
-    private EntityType getEntityType(GraphQLObjectType objectType) {
+    private EntityType getEntityType(EntityManager entityManager, GraphQLObjectType objectType) {
         return entityManager.getMetamodel().getEntities().stream().filter(it -> it.getName().equals(objectType.getName())).findFirst().get();
     }
 
