@@ -11,6 +11,8 @@ import javax.persistence.metamodel.*;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -142,6 +144,10 @@ public class GraphQLSchemaBuilder {
                 return Scalars.GraphQLBoolean;
             else if (Date.class.isAssignableFrom(attribute.getJavaType()))
                 return JavaScalars.GraphQLDate;
+            else if (LocalDateTime.class.isAssignableFrom(attribute.getJavaType()))
+                return JavaScalars.GraphQLLocalDateTime;
+            else if (LocalDate.class.isAssignableFrom(attribute.getJavaType()))
+                return JavaScalars.GraphQLLocalDate;
             else if (attribute.getJavaType().isEnum()) {
                 return getTypeFromJavaType(attribute.getJavaType());
             }
