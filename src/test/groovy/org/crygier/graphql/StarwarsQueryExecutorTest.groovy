@@ -1,6 +1,5 @@
 package org.crygier.graphql
 
-import groovy.json.JsonOutput
 import org.crygier.graphql.model.starwars.Episode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationContextLoader
@@ -256,6 +255,31 @@ class StarwarsQueryExecutorTest extends Specification {
                                 [ name: 'Darth Vader' ],
                                 [ name: 'Luke Skywalker' ]
                         ]
+                ]
+        ]
+
+        when:
+        def result = executor.execute(query).data
+
+        then:
+        result == expected
+    }
+
+    def 'Pagination without content'() {
+        given:
+        def query = '''
+        {
+            HumanConnection(paginationRequest: { page: 1, size: 2}) {
+                totalPages
+                totalElements
+            }
+        }
+        '''
+
+        def expected = [
+                HumanConnection: [
+                        totalPages: 3,
+                        totalElements: 5
                 ]
         ]
 

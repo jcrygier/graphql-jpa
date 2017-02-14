@@ -42,10 +42,19 @@ public class ExtendedJpaDataFetcher extends JpaDataFetcher {
             result.put("content", getQuery(environment, contentSelection.get()).setMaxResults(pageInformation.size).setFirstResult((pageInformation.page - 1) * pageInformation.size).getResultList());
 
         if (totalElementsSelection.isPresent() || totalPagesSelection.isPresent()) {
-            Long totalElements = getCountQuery(environment, contentSelection.get()).getSingleResult();
 
-            result.put("totalElements", totalElements);
-            result.put("totalPages", ((Double) Math.ceil(totalElements / (double) pageInformation.size)).longValue());
+            if(contentSelection.isPresent()) {
+                Long totalElements = getCountQuery(environment, contentSelection.get()).getSingleResult();
+
+                result.put("totalElements", totalElements);
+                result.put("totalPages", ((Double) Math.ceil(totalElements / (double) pageInformation.size)).longValue());
+            } else {
+                // if no "content" was selected an empty Field can be used
+                Long totalElements = getCountQuery(environment, new Field()).getSingleResult();
+
+                result.put("totalElements", totalElements);
+                result.put("totalPages", ((Double) Math.ceil(totalElements / (double) pageInformation.size)).longValue());
+            }
         }
 
         return result;
