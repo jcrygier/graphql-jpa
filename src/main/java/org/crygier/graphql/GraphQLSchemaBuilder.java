@@ -162,7 +162,11 @@ public class GraphQLSchemaBuilder {
             return new GraphQLList(getTypeFromJavaType(foreignType.getJavaType()));
         }
 
-        throw new UnsupportedOperationException("Attribute could not be mapped to GraphQL: " + attribute);
+        final String declaringType = attribute.getDeclaringType().getJavaType().getName(); // fully qualified name of the entity class
+        final String declaringMember = attribute.getJavaMember().getName(); // field name in the entity class
+
+        throw new UnsupportedOperationException(
+                "Attribute could not be mapped to GraphQL: field '" + declaringMember + "' of entity class '"+ declaringType +"'");
     }
 
     private boolean isValidInput(Attribute attribute) {
