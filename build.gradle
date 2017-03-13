@@ -5,7 +5,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 group = 'com.crygier'
-version = '0.2'
+version = '0.3'
 
 jar {
     baseName = 'graphql-jpa'
