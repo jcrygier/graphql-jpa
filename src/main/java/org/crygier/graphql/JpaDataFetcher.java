@@ -77,8 +77,10 @@ public class JpaDataFetcher implements DataFetcher {
     }
 
     protected Object convertValue(DataFetchingEnvironment environment, Argument argument, Value value) {
-        if (value instanceof StringValue)
-            return ((StringValue) value).getValue();
+        if (value instanceof StringValue) {
+            // Return real parameter for instance UUID even if the Value is a StringValue
+            return environment.getArgument(argument.getName());
+        }
         else if (value instanceof VariableReference)
             return environment.getArguments().get(((VariableReference) value).getName());
         else if (value instanceof ArrayValue)

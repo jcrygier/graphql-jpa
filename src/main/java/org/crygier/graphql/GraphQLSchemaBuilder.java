@@ -13,10 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -131,6 +128,8 @@ public class GraphQLSchemaBuilder {
         if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC) {
             if (String.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLString;
+            else if (UUID.class.isAssignableFrom(attribute.getJavaType()))
+                return JavaScalars.GraphQLUUID;
             else if (Integer.class.isAssignableFrom(attribute.getJavaType()) || int.class.isAssignableFrom(attribute.getJavaType()))
                 return Scalars.GraphQLInt;
             else if (Short.class.isAssignableFrom(attribute.getJavaType()) || short.class.isAssignableFrom(attribute.getJavaType()))

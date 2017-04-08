@@ -101,3 +101,7 @@ insert into character_appears_in (character_id, appears_in) values
     ('2001', 4),
     ('2001', 5),
     ('2001', 6);
+
+-- Things
+insert into thing (id, type) values
+    ('2D1EBC5B7D2741979CF0E84451C5BBB1', 'Thing1');
