@@ -3,6 +3,7 @@ package org.crygier.graphql;
 import graphql.Scalars;
 import graphql.schema.*;
 import org.crygier.graphql.annotation.SchemaDocumentation;
+import org.crygier.graphql.annotation.GraphQLIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +41,8 @@ public class GraphQLSchemaBuilder {
 
     private GraphQLObjectType getQueryType() {
         GraphQLObjectType.Builder queryType = GraphQLObjectType.newObject().name("QueryType_JPA").description("All encompassing schema for this JPA environment");
-        queryType.fields(entityManager.getMetamodel().getEntities().stream().map(this::getQueryFieldDefinition).collect(Collectors.toList()));
-        queryType.fields(entityManager.getMetamodel().getEntities().stream().map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
+        queryType.fields(entityManager.getMetamodel().getEntities().stream().filter(this::isNotIgnored).map(this::getQueryFieldDefinition).collect(Collectors.toList()));
+        queryType.fields(entityManager.getMetamodel().getEntities().stream().filter(this::isNotIgnored).map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
 
         return queryType.build();
     }
@@ -52,7 +53,7 @@ public class GraphQLSchemaBuilder {
                 .description(getSchemaDocumentation( entityType.getJavaType()))
                 .type(new GraphQLList(getObjectType(entityType)))
                 .dataFetcher(new JpaDataFetcher(entityManager, entityType))
-                .argument(entityType.getAttributes().stream().filter(this::isValidInput).map(this::getArgument).collect(Collectors.toList()))
+                .argument(entityType.getAttributes().stream().filter(this::isValidInput).filter(this::isNotIgnored).map(this::getArgument).collect(Collectors.toList()))
                 .build();
     }
 
@@ -91,7 +92,7 @@ public class GraphQLSchemaBuilder {
         return GraphQLObjectType.newObject()
                 .name(entityType.getName())
                 .description(getSchemaDocumentation( entityType.getJavaType()))
-                .fields(entityType.getAttributes().stream().map(this::getObjectField).collect(Collectors.toList()))
+                .fields(entityType.getAttributes().stream().filter(this::isNotIgnored).map(this::getObjectField).collect(Collectors.toList()))
                 .build();
     }
 
@@ -189,6 +190,27 @@ public class GraphQLSchemaBuilder {
         }
 
         return null;
+    }
+
+    private boolean isNotIgnored(Attribute attribute) {
+        return isNotIgnored(attribute.getJavaMember()) && isNotIgnored(attribute.getJavaType());
+    }
+
+    private boolean isNotIgnored(EntityType entityType) {
+        return isNotIgnored(entityType.getJavaType());
+    }
+
+    private boolean isNotIgnored(Member member) {
+        return member instanceof AnnotatedElement && isNotIgnored((AnnotatedElement) member);
+    }
+
+    private boolean isNotIgnored(AnnotatedElement annotatedElement) {
+        if (annotatedElement != null) {
+            GraphQLIgnore schemaDocumentation = annotatedElement.getAnnotation(GraphQLIgnore.class);
+            return schemaDocumentation == null;
+        }
+
+        return false;
     }
 
     private GraphQLType getTypeFromJavaType(Class clazz) {
