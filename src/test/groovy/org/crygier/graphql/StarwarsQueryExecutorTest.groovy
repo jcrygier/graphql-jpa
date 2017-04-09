@@ -362,7 +362,6 @@ class StarwarsQueryExecutorTest extends Specification {
                         [ name: 'Wilhuff Tarkin', gender: [ description: "Male" ] ],
                         [ name: 'Han Solo', gender: [ description: "Male" ] ],
                         [ name: 'Luke Skywalker', gender: [ description: "Male" ]],
-                        [ name: 'Leia Organa', gender: [ description: 'Female' ]]                     // TODO: Why is this coming back?
                 ]
         ]
 

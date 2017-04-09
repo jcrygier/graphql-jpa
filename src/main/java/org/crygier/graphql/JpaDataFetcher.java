@@ -10,8 +10,7 @@ import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.PluralAttribute;
 import javax.persistence.metamodel.SingularAttribute;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JpaDataFetcher implements DataFetcher {
@@ -34,6 +33,8 @@ public class JpaDataFetcher implements DataFetcher {
         CriteriaQuery<Object> query = cb.createQuery((Class) entityType.getJavaType());
         Root root = query.from(entityType);
 
+        List<Argument> arguments = new ArrayList<>();
+
         // Loop through all of the fields being requested
         field.getSelectionSet().getSelections().forEach(selection -> {
             if (selection instanceof Field) {
@@ -49,6 +50,12 @@ public class JpaDataFetcher implements DataFetcher {
                         query.orderBy(cb.asc(fieldPath));
                 }
 
+                // Process arguments clauses
+                arguments.addAll(selectedField.getArguments().stream()
+                        .filter(it -> !"orderBy".equals(it.getName()))
+                        .map(it -> new Argument(selectedField.getName() + "." + it.getName(), it.getValue()))
+                        .collect(Collectors.toList()));
+
                 // Check if it's an object and the foreign side is One.  Then we can eagerly fetch causing an inner join instead of 2 queries
                 if (fieldPath.getModel() instanceof SingularAttribute) {
                     SingularAttribute attribute = (SingularAttribute) fieldPath.getModel();
@@ -58,22 +65,40 @@ public class JpaDataFetcher implements DataFetcher {
             }
         });
 
-        List<Predicate> predicates = field.getArguments().stream().map(it -> getPredicate(cb, root, environment, it)).collect(Collectors.toList());
+        arguments.addAll(field.getArguments());
+
+        List<Predicate> predicates = arguments.stream().map(it -> getPredicate(cb, root, environment, it)).collect(Collectors.toList());
         query.where(predicates.toArray(new Predicate[predicates.size()]));
 
         return entityManager.createQuery(query.distinct(true));
     }
 
     private Predicate getPredicate(CriteriaBuilder cb, Root root, DataFetchingEnvironment environment, Argument argument) {
-        Attribute argumentEntityAttribute = getAttribute(environment, argument);
+        Path path = null;
+        if (!argument.getName().contains(".")) {
+            Attribute argumentEntityAttribute = getAttribute(environment, argument);
 
-        // If the argument is a list, let's assume we need to join and do an 'in' clause
-        if (argumentEntityAttribute instanceof PluralAttribute) {
-            Join join = root.join(argument.getName());
-            return join.in(convertValue(environment, argument, argument.getValue()));
+            // If the argument is a list, let's assume we need to join and do an 'in' clause
+            if (argumentEntityAttribute instanceof PluralAttribute) {
+                Join join = root.join(argument.getName());
+                return join.in(convertValue(environment, argument, argument.getValue()));
+            }
+
+            path = root.get(argument.getName());
+
+            return cb.equal(path, convertValue(environment, argument, argument.getValue()));
+        } else {
+            List<String> parts = Arrays.asList(argument.getName().split("\\."));
+            for (String part : parts) {
+                if (path == null) {
+                    path = root.get(part);
+                } else {
+                    path = path.get(part);
+                }
+            }
+
+            return cb.equal(path, convertValue(environment, argument, argument.getValue()));
         }
-
-        return cb.equal(root.get(argument.getName()), convertValue(environment, argument, argument.getValue()));
     }
 
     protected Object convertValue(DataFetchingEnvironment environment, Argument argument, Value value) {
