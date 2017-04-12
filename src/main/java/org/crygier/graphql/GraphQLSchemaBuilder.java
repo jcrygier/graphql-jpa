@@ -12,6 +12,7 @@ import javax.persistence.metamodel.*;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -150,6 +151,8 @@ public class GraphQLSchemaBuilder {
                 return JavaScalars.GraphQLLocalDate;
             else if (attribute.getJavaType().isEnum()) {
                 return getTypeFromJavaType(attribute.getJavaType());
+            } else if (BigDecimal.class.isAssignableFrom(attribute.getJavaType())) {
+                return Scalars.GraphQLBigDecimal;
             }
         } else if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_MANY || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_MANY) {
             EntityType foreignType = (EntityType) ((PluralAttribute) attribute).getElementType();
