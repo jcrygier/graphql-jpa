@@ -372,6 +372,32 @@ class StarwarsQueryExecutorTest extends Specification {
         result == expected;
     }
 
+    def 'Query for searching by IntType (sequence field)'() {
+        given:
+        def query = '''
+        {
+          CodeList(sequence: 2) {
+            id
+            description
+            active
+            type
+            sequence
+          }
+        }
+        '''
+        def expected = [
+            CodeList: [
+                [ id: 1, description: "Female", active: true, type: "org.crygier.graphql.model.starwars.Gender", sequence: 2]
+            ]
+        ]
+
+        when:
+        def result = executor.execute(query).data
+
+        then:
+        result == expected;
+    }
+
     @Autowired
     private EntityManager em;
 
