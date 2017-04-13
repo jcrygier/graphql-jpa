@@ -123,6 +123,8 @@ public class JpaDataFetcher implements DataFetcher {
             return ((IntValue) value).getValue();
         } else if (value instanceof BooleanValue) {
             return ((BooleanValue) value).isValue();
+        } else if (value instanceof FloatValue) {
+            return ((FloatValue) value).getValue();
         }
 
         return value.toString();
