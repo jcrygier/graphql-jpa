@@ -121,6 +121,8 @@ public class JpaDataFetcher implements DataFetcher {
             return Enum.valueOf(enumType, ((EnumValue) value).getName());
         } else if (value instanceof IntValue) {
             return ((IntValue) value).getValue();
+        } else if (value instanceof BooleanValue) {
+            return ((BooleanValue) value).isValue();
         }
 
         return value.toString();
