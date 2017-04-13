@@ -398,6 +398,33 @@ class StarwarsQueryExecutorTest extends Specification {
         result == expected;
     }
 
+    def 'Query for searching by BooleanType (active field)'() {
+        given:
+        def query = '''
+        {
+          CodeList(active: true) {
+            id
+            description
+            active
+            type
+            sequence
+          }
+        }
+        '''
+        def expected = [
+                CodeList: [
+                        [ id: 0, description: "Male", active: true, type: "org.crygier.graphql.model.starwars.Gender", sequence: 1],
+                        [ id: 1, description: "Female", active: true, type: "org.crygier.graphql.model.starwars.Gender", sequence: 2]
+                ]
+        ]
+
+        when:
+        def result = executor.execute(query).data
+
+        then:
+        result == expected;
+    }
+
     @Autowired
     private EntityManager em;
 
