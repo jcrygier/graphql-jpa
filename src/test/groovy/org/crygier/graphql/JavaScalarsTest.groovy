@@ -15,8 +15,8 @@ class JavaScalarsTest extends Specification {
         given:
         Coercing coercing = JavaScalars.GraphQLLocalDateTime.getCoercing()
 
-        long input = LocalDateTime.of(2017,02,02,12,30,15)
-                .toEpochSecond(ZoneId.systemDefault().getRules().getOffset(Instant.now()))
+        LocalDateTime localDateTime = LocalDateTime.of(2017, 02, 02, 12, 30, 15)
+        long input = localDateTime.toEpochSecond(ZoneId.systemDefault().getRules().getOffset(localDateTime))
 
         when:
         def result = coercing.serialize(input)
@@ -54,8 +54,8 @@ class JavaScalarsTest extends Specification {
     def 'Long to LocalDate'() {
         given:
         Coercing coercing = JavaScalars.GraphQLLocalDate.getCoercing()
-        long input = LocalDateTime.of(2017,02,02,0,0,0)
-                .toEpochSecond(ZoneId.systemDefault().getRules().getOffset(Instant.now()))
+        LocalDateTime localDateTime = LocalDateTime.of(2017, 02, 02, 0, 0, 0)
+        long input = localDateTime.toEpochSecond(ZoneId.systemDefault().getRules().getOffset(localDateTime))
 
         when:
         def result = coercing.serialize(input)
