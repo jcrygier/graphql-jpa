@@ -39,28 +39,33 @@ public class JpaDataFetcher implements DataFetcher {
         field.getSelectionSet().getSelections().forEach(selection -> {
             if (selection instanceof Field) {
                 Field selectedField = (Field) selection;
-                Path fieldPath = root.get(selectedField.getName());
 
-                // Process the orderBy clause
-                Optional<Argument> orderByArgument = selectedField.getArguments().stream().filter(it -> "orderBy".equals(it.getName())).findFirst();
-                if (orderByArgument.isPresent()) {
-                    if ("DESC".equals(((EnumValue)orderByArgument.get().getValue()).getName()))
-                        query.orderBy(cb.desc(fieldPath));
-                    else
-                        query.orderBy(cb.asc(fieldPath));
-                }
+                // "__typename" is part of the graphql introspection spec and has to be ignored by jpa
+                if(!"__typename".equals(selectedField.getName())) {
 
-                // Process arguments clauses
-                arguments.addAll(selectedField.getArguments().stream()
-                        .filter(it -> !"orderBy".equals(it.getName()))
-                        .map(it -> new Argument(selectedField.getName() + "." + it.getName(), it.getValue()))
-                        .collect(Collectors.toList()));
+                    Path fieldPath = root.get(selectedField.getName());
 
-                // Check if it's an object and the foreign side is One.  Then we can eagerly fetch causing an inner join instead of 2 queries
-                if (fieldPath.getModel() instanceof SingularAttribute) {
-                    SingularAttribute attribute = (SingularAttribute) fieldPath.getModel();
-                    if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_ONE || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_ONE)
-                        root.fetch(selectedField.getName());
+                    // Process the orderBy clause
+                    Optional<Argument> orderByArgument = selectedField.getArguments().stream().filter(it -> "orderBy".equals(it.getName())).findFirst();
+                    if (orderByArgument.isPresent()) {
+                        if ("DESC".equals(((EnumValue) orderByArgument.get().getValue()).getName()))
+                            query.orderBy(cb.desc(fieldPath));
+                        else
+                            query.orderBy(cb.asc(fieldPath));
+                    }
+
+                    // Process arguments clauses
+                    arguments.addAll(selectedField.getArguments().stream()
+                            .filter(it -> !"orderBy".equals(it.getName()))
+                            .map(it -> new Argument(selectedField.getName() + "." + it.getName(), it.getValue()))
+                            .collect(Collectors.toList()));
+
+                    // Check if it's an object and the foreign side is One.  Then we can eagerly fetch causing an inner join instead of 2 queries
+                    if (fieldPath.getModel() instanceof SingularAttribute) {
+                        SingularAttribute attribute = (SingularAttribute) fieldPath.getModel();
+                        if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_ONE || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_ONE)
+                            root.fetch(selectedField.getName());
+                    }
                 }
             }
         });
