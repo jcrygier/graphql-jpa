@@ -5,7 +5,7 @@
         "subject": "jcrygier"
     },
     "version": {
-        "name": "0.3"
+        "name": "0.4"
     },
     "files": [
         {"includePattern": "build/libs/(.*)", "excludePattern": ".*/do-not-deploy/.*", "uploadPattern": "com/crygier/graphql-jpa/0.3/$1"}
