@@ -8,7 +8,7 @@
         "name": "0.4"
     },
     "files": [
-        {"includePattern": "build/libs/(.*)", "excludePattern": ".*/do-not-deploy/.*", "uploadPattern": "com/crygier/graphql-jpa/0.3/$1"}
+        {"includePattern": "build/libs/(.*)", "excludePattern": ".*/do-not-deploy/.*", "uploadPattern": "com/crygier/graphql-jpa/0.4/$1"}
     ],
     "publish": true
 }
