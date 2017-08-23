@@ -24,7 +24,7 @@ public class GraphQLExecutor {
     @PostConstruct
     protected void createGraphQL() {
         if (entityManager != null)
-            this.graphQL = new GraphQL(new GraphQLSchemaBuilder(entityManager).getGraphQLSchema());
+            this.graphQL = GraphQL.newGraphQL(new GraphQLSchemaBuilder(entityManager).getGraphQLSchema()).build();
     }
 
     @Transactional
