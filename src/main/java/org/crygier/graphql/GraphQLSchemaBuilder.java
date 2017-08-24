@@ -1,21 +1,42 @@
 package org.crygier.graphql;
 
 import graphql.Scalars;
-import graphql.schema.*;
-import org.crygier.graphql.annotation.SchemaDocumentation;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLInputType;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
 import org.crygier.graphql.annotation.GraphQLIgnore;
+import org.crygier.graphql.annotation.SchemaDocumentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.metamodel.*;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.Type;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,6 +46,9 @@ public class GraphQLSchemaBuilder {
     private static final Logger log = LoggerFactory.getLogger(GraphQLSchemaBuilder.class);
 
     private EntityManager entityManager;
+
+    private Map<Class, GraphQLType> classCache = new HashMap<>();
+    private Map<EntityType, GraphQLObjectType> entityCache = new HashMap<>();
 
     public GraphQLSchemaBuilder(EntityManager entityManager) {
         this.entityManager = entityManager;
@@ -87,11 +111,18 @@ public class GraphQLSchemaBuilder {
     }
 
     private GraphQLObjectType getObjectType(EntityType<?> entityType) {
-        return GraphQLObjectType.newObject()
+        if (entityCache.containsKey(entityType))
+            return entityCache.get(entityType);
+
+        GraphQLObjectType answer = GraphQLObjectType.newObject()
                 .name(entityType.getName())
                 .description(getSchemaDocumentation( entityType.getJavaType()))
                 .fields(entityType.getAttributes().stream().filter(this::isNotIgnored).map(this::getObjectField).collect(Collectors.toList()))
                 .build();
+
+        entityCache.put(entityType, answer);
+
+        return answer;
     }
 
     private GraphQLFieldDefinition getObjectField(Attribute attribute) {
@@ -217,6 +248,9 @@ public class GraphQLSchemaBuilder {
 
     private GraphQLType getTypeFromJavaType(Class clazz) {
         if (clazz.isEnum()) {
+            if (classCache.containsKey(clazz))
+                return classCache.get(clazz);
+
             GraphQLEnumType.Builder enumBuilder = GraphQLEnumType.newEnum().name(clazz.getSimpleName());
             int ordinal = 0;
             for (Enum enumValue : ((Class<Enum>)clazz).getEnumConstants())
@@ -224,6 +258,8 @@ public class GraphQLSchemaBuilder {
 
             GraphQLType answer = enumBuilder.build();
             setIdentityCoercing(answer);
+
+            classCache.put(clazz, answer);
 
             return answer;
         }
