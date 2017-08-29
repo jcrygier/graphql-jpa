@@ -1,5 +1,6 @@
 package org.crygier.graphql;
 
+import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 
@@ -36,8 +37,7 @@ public class GraphQLExecutor {
     public ExecutionResult execute(String query, Map<String, Object> arguments) {
         if (arguments == null)
             return graphQL.execute(query);
-        else
-            return graphQL.execute(query, (Object) null, arguments);
+        return graphQL.execute(ExecutionInput.newExecutionInput().query(query).variables(arguments).build());
     }
 
 }
