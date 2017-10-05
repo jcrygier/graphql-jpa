@@ -1,6 +1,7 @@
 package org.crygier.graphql.model.starwars
 
 import groovy.transform.CompileStatic
+import org.crygier.graphql.annotation.GraphQLIgnore
 import org.crygier.graphql.annotation.SchemaDocumentation
 
 import javax.persistence.Entity
@@ -12,5 +13,8 @@ class Droid extends Character {
 
     @SchemaDocumentation("Documents the primary purpose this droid serves")
     String primaryFunction;
+
+    @GraphQLIgnore
+    byte[] data;
 
 }
