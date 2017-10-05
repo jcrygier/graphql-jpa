@@ -37,7 +37,7 @@ class StarwarsQueryExecutorTest extends Specification {
         def result = executor.execute(query).data
 
         then:
-        result == expected
+        result['Droid'].sort() == expected['Droid']
     }
 
     def 'Query for droid by name'() {
