@@ -154,7 +154,7 @@ public class GraphQLSchemaBuilder {
     }
 
     private Stream<Attribute> findBasicAttributes(Collection<Attribute> attributes) {
-        return attributes.stream().filter(it -> it.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC);
+        return attributes.stream().filter(this::isNotIgnored).filter(it -> it.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC);
     }
 
     private GraphQLType getAttributeType(Attribute attribute) {
