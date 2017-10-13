@@ -191,8 +191,12 @@ public class GraphQLSchemaBuilder {
 
     private GraphQLType getAttributeType(Attribute attribute) {
         if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC) {
-            return getBasicAttributeType(attribute.getJavaType());
-
+            try {
+                return getBasicAttributeType(attribute.getJavaType());
+            } catch (UnsupportedOperationException e) {
+                //fall through to the exception below
+                //which is more useful because it also contains the declaring member
+            }
         } else if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_MANY || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_MANY) {
             EntityType foreignType = (EntityType) ((PluralAttribute) attribute).getElementType();
             return new GraphQLList(new GraphQLTypeReference(foreignType.getName()));
