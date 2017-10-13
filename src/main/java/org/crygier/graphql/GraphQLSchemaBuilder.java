@@ -157,34 +157,42 @@ public class GraphQLSchemaBuilder {
         return attributes.stream().filter(this::isNotIgnored).filter(it -> it.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC);
     }
 
+    private GraphQLType getBasicAttributeType(Class javaType) {
+        if (String.class.isAssignableFrom(javaType))
+            return Scalars.GraphQLString;
+        else if (UUID.class.isAssignableFrom(javaType))
+            return JavaScalars.GraphQLUUID;
+        else if (Integer.class.isAssignableFrom(javaType) || int.class.isAssignableFrom(javaType))
+            return Scalars.GraphQLInt;
+        else if (Short.class.isAssignableFrom(javaType) || short.class.isAssignableFrom(javaType))
+            return Scalars.GraphQLShort;
+        else if (Float.class.isAssignableFrom(javaType) || float.class.isAssignableFrom(javaType)
+                || Double.class.isAssignableFrom(javaType) || double.class.isAssignableFrom(javaType))
+            return Scalars.GraphQLFloat;
+        else if (Long.class.isAssignableFrom(javaType) || long.class.isAssignableFrom(javaType))
+            return Scalars.GraphQLLong;
+        else if (Boolean.class.isAssignableFrom(javaType) || boolean.class.isAssignableFrom(javaType))
+            return Scalars.GraphQLBoolean;
+        else if (Date.class.isAssignableFrom(javaType))
+            return JavaScalars.GraphQLDate;
+        else if (LocalDateTime.class.isAssignableFrom(javaType))
+            return JavaScalars.GraphQLLocalDateTime;
+        else if (LocalDate.class.isAssignableFrom(javaType))
+            return JavaScalars.GraphQLLocalDate;
+        else if (javaType.isEnum()) {
+            return getTypeFromJavaType(javaType);
+        } else if (BigDecimal.class.isAssignableFrom(javaType)) {
+            return Scalars.GraphQLBigDecimal;
+        }
+
+        throw new UnsupportedOperationException(
+                "Class could not be mapped to GraphQL: '"+ javaType.getClass().getTypeName() +"'");
+    }
+
     private GraphQLType getAttributeType(Attribute attribute) {
         if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC) {
-            if (String.class.isAssignableFrom(attribute.getJavaType()))
-                return Scalars.GraphQLString;
-            else if (UUID.class.isAssignableFrom(attribute.getJavaType()))
-                return JavaScalars.GraphQLUUID;
-            else if (Integer.class.isAssignableFrom(attribute.getJavaType()) || int.class.isAssignableFrom(attribute.getJavaType()))
-                return Scalars.GraphQLInt;
-            else if (Short.class.isAssignableFrom(attribute.getJavaType()) || short.class.isAssignableFrom(attribute.getJavaType()))
-                return Scalars.GraphQLShort;
-            else if (Float.class.isAssignableFrom(attribute.getJavaType()) || float.class.isAssignableFrom(attribute.getJavaType())
-                    || Double.class.isAssignableFrom(attribute.getJavaType()) || double.class.isAssignableFrom(attribute.getJavaType()))
-                return Scalars.GraphQLFloat;
-            else if (Long.class.isAssignableFrom(attribute.getJavaType()) || long.class.isAssignableFrom(attribute.getJavaType()))
-                return Scalars.GraphQLLong;
-            else if (Boolean.class.isAssignableFrom(attribute.getJavaType()) || boolean.class.isAssignableFrom(attribute.getJavaType()))
-                return Scalars.GraphQLBoolean;
-            else if (Date.class.isAssignableFrom(attribute.getJavaType()))
-                return JavaScalars.GraphQLDate;
-            else if (LocalDateTime.class.isAssignableFrom(attribute.getJavaType()))
-                return JavaScalars.GraphQLLocalDateTime;
-            else if (LocalDate.class.isAssignableFrom(attribute.getJavaType()))
-                return JavaScalars.GraphQLLocalDate;
-            else if (attribute.getJavaType().isEnum()) {
-                return getTypeFromJavaType(attribute.getJavaType());
-            } else if (BigDecimal.class.isAssignableFrom(attribute.getJavaType())) {
-                return Scalars.GraphQLBigDecimal;
-            }
+            return getBasicAttributeType(attribute.getJavaType());
+
         } else if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_MANY || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_MANY) {
             EntityType foreignType = (EntityType) ((PluralAttribute) attribute).getElementType();
             return new GraphQLList(new GraphQLTypeReference(foreignType.getName()));
@@ -264,7 +272,7 @@ public class GraphQLSchemaBuilder {
             return answer;
         }
 
-        return null;
+        return getBasicAttributeType(clazz);
     }
 
     /**
@@ -286,11 +294,11 @@ public class GraphQLSchemaBuilder {
             GraphQLArgument.newArgument()
                     .name(PAGINATION_REQUEST_PARAM_NAME)
                     .type(GraphQLInputObjectType.newInputObject()
-                                    .name("PaginationObject")
-                                    .description("Query object for Pagination Requests, specifying the requested page, and that page's size.\n\nNOTE: 'page' parameter is 1-indexed, NOT 0-indexed.\n\nExample: paginationRequest { page: 1, size: 20 }")
-                                    .field(GraphQLInputObjectField.newInputObjectField().name("page").description("Which page should be returned, starting with 1 (1-indexed)").type(Scalars.GraphQLInt).build())
-                                    .field(GraphQLInputObjectField.newInputObjectField().name("size").description("How many results should this page contain").type(Scalars.GraphQLInt).build())
-                                    .build()
+                            .name("PaginationObject")
+                            .description("Query object for Pagination Requests, specifying the requested page, and that page's size.\n\nNOTE: 'page' parameter is 1-indexed, NOT 0-indexed.\n\nExample: paginationRequest { page: 1, size: 20 }")
+                            .field(GraphQLInputObjectField.newInputObjectField().name("page").description("Which page should be returned, starting with 1 (1-indexed)").type(Scalars.GraphQLInt).build())
+                            .field(GraphQLInputObjectField.newInputObjectField().name("size").description("How many results should this page contain").type(Scalars.GraphQLInt).build())
+                            .build()
                     ).build();
 
     private static final GraphQLEnumType orderByDirectionEnum =
