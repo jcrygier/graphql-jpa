@@ -19,9 +19,13 @@ class EmbeddingId implements Serializable {
     @Column(name = "episode")
     private Episode episode;
 
-    public EmbeddingId(Character character, Episode episode) {
+    @Column(name = "age")
+    private int age;
+
+    public EmbeddingId(Character character, Episode episode, int age) {
         this.character = character;
         this.episode = episode;
+        this.age = age;
     }
 
     @Override
@@ -31,6 +35,7 @@ class EmbeddingId implements Serializable {
 
         EmbeddingId that = (EmbeddingId) o;
 
+        if (age != that.age) return false;
         if (character != null ? !character.equals(that.character) : that.character != null) return false;
         return episode == that.episode;
     }
@@ -39,6 +44,7 @@ class EmbeddingId implements Serializable {
     public int hashCode() {
         int result = character != null ? character.hashCode() : 0;
         result = 31 * result + (episode != null ? episode.hashCode() : 0);
+        result = 31 * result + age;
         return result;
     }
 }

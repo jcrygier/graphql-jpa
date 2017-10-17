@@ -40,7 +40,7 @@ public class GraphQLSchemaBuilder {
         return schemaBuilder.build();
     }
 
-    private GraphQLObjectType getQueryType() {
+    GraphQLObjectType getQueryType() {
         GraphQLObjectType.Builder queryType = GraphQLObjectType.newObject().name("QueryType_JPA").description("All encompassing schema for this JPA environment");
         queryType.fields(entityManager.getMetamodel().getEntities().stream().filter(this::isNotIgnored).map(this::getQueryFieldDefinition).collect(Collectors.toList()));
         queryType.fields(entityManager.getMetamodel().getEntities().stream().filter(this::isNotIgnored).map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
@@ -78,11 +78,21 @@ public class GraphQLSchemaBuilder {
 
     private Stream<GraphQLArgument> getArgument(Attribute attribute) {
         return getAttributeType(attribute)
-                .filter(typ -> typ instanceof GraphQLInputType)
-                .map(type -> GraphQLArgument.newArgument()
-                        .name(attribute.getName())
-                        .type((GraphQLInputType) type)
-                        .build());
+                .filter(type -> type instanceof GraphQLInputType)
+                .filter(type -> attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED && type instanceof GraphQLScalarType)
+                .map(type -> {
+                    String name;
+                    if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED) {
+                        name = type.getName();
+                    } else {
+                        name = attribute.getName();
+                    }
+
+                    return GraphQLArgument.newArgument()
+                            .name(name)
+                            .type((GraphQLInputType) type)
+                            .build();
+                });
     }
 
     GraphQLObjectType getObjectType(EntityType<?> entityType) {
@@ -206,7 +216,8 @@ public class GraphQLSchemaBuilder {
 
     private boolean isValidInput(Attribute attribute) {
         return attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.BASIC ||
-                attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ELEMENT_COLLECTION;
+                attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ELEMENT_COLLECTION ||
+                attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED;
     }
 
     private String getSchemaDocumentation(Member member) {

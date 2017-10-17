@@ -9,6 +9,7 @@ import spock.lang.Specification
 
 import javax.persistence.EntityManager
 import javax.persistence.metamodel.EntityType
+import java.util.stream.Collectors
 
 @Configuration
 @ContextConfiguration(loader = SpringBootContextLoader, classes = TestApplication)
@@ -29,7 +30,24 @@ class EmbeddedSchemaBuildTest extends Specification {
         def graphQlObject = builder.getObjectType(embeddingEntity)
 
         then:
-        graphQlObject.fieldDefinitions.size() == 2
+        graphQlObject.fieldDefinitions.size() == 3
+    }
+
+    def 'Correctly extract embedded basic query fields'() {
+        when:
+        def embeddingEntity = entityManager.getMetamodel().getEntities().stream().filter { e -> e.name == "EmbeddingTest"}.findFirst().get()
+        def graphQlFieldDefinition = builder.getQueryFieldDefinition(embeddingEntity)
+
+        then:
+        graphQlFieldDefinition.arguments.size() == 1
+    }
+
+    def 'Correctly extract a whole moddel with embeddings'() {
+        when:
+        def q = builder.getQueryType()
+
+        then:
+        true
     }
 
 }
