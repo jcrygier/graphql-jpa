@@ -5,14 +5,13 @@ import org.crygier.graphql.annotation.GraphQLIgnore;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Entity
-@GraphQLIgnore
 @CompileStatic
 public class EmbeddingTest {
 
-//    @GraphQLIgnore
-//    @EmbeddedId
-//    EmbeddingId id;
+    @EmbeddedId
+    private EmbeddingId id;
 
 }

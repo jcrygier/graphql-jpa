@@ -4,17 +4,31 @@ import org.crygier.graphql.annotation.GraphQLIgnore;
 import org.crygier.graphql.model.starwars.Character;
 import org.crygier.graphql.model.starwars.Episode;
 
-import javax.persistence.Embeddable;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import java.io.Serializable;
 
-//@GraphQLIgnore
-//@Embeddable
-public class EmbeddingId {
+@Embeddable
+class EmbeddingId implements Serializable {
 
-//    @ManyToOne
-    Character character;
+    @Basic
+    private int id;
 
-//    @ManyToOne
-    Episode episode;
+    public EmbeddingId(int id) {
+        this.id = id;
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        EmbeddingId that = (EmbeddingId) o;
+
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }
