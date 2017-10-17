@@ -48,7 +48,7 @@ public class GraphQLSchemaBuilder {
         return queryType.build();
     }
 
-    private GraphQLFieldDefinition getQueryFieldDefinition(EntityType<?> entityType) {
+    GraphQLFieldDefinition getQueryFieldDefinition(EntityType<?> entityType) {
         return GraphQLFieldDefinition.newFieldDefinition()
                 .name(entityType.getName())
                 .description(getSchemaDocumentation(entityType.getJavaType()))
@@ -85,7 +85,7 @@ public class GraphQLSchemaBuilder {
                         .build());
     }
 
-    private GraphQLObjectType getObjectType(EntityType<?> entityType) {
+    GraphQLObjectType getObjectType(EntityType<?> entityType) {
         if (entityCache.containsKey(entityType))
             return entityCache.get(entityType);
 
@@ -108,17 +108,29 @@ public class GraphQLSchemaBuilder {
                     arguments.add(GraphQLArgument.newArgument().name("orderBy").type(orderByDirectionEnum).build());            // Always add the orderBy argument
 
                     // Get the fields that can be queried on (i.e. Simple Types, no Sub-Objects)
-                    if (attribute instanceof SingularAttribute && attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.BASIC) {
+                    if (attribute instanceof SingularAttribute
+                            && attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.BASIC) {
                         ManagedType foreignType = (ManagedType) ((SingularAttribute) attribute).getType();
+
                         Stream<Attribute> attributes = findBasicAttributes(foreignType.getAttributes());
 
                         attributes.forEach(it -> {
-                            arguments.add(GraphQLArgument.newArgument().name(it.getName()).type((GraphQLInputType) getAttributeType(it).findFirst().get()).build());
+                            arguments.add(GraphQLArgument.newArgument()
+                                    .name(it.getName())
+                                    .type((GraphQLInputType) getAttributeType(it).findFirst().get())
+                                    .build());
                         });
                     }
 
+                    String name;
+                    if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED) {
+                        name = type.getName();
+                    } else {
+                        name = attribute.getName();
+                    }
+
                     return GraphQLFieldDefinition.newFieldDefinition()
-                            .name(attribute.getName())
+                            .name(name)
                             .description(getSchemaDocumentation(attribute.getJavaMember()))
                             .type((GraphQLOutputType) type)
                             .argument(arguments)

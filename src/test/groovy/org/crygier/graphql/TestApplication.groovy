@@ -3,7 +3,7 @@ package org.crygier.graphql
 import groovy.transform.CompileStatic
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.orm.jpa.EntityScan
+import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

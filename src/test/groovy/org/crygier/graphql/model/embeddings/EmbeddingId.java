@@ -1,20 +1,27 @@
 package org.crygier.graphql.model.embeddings;
 
-import org.crygier.graphql.annotation.GraphQLIgnore;
 import org.crygier.graphql.model.starwars.Character;
 import org.crygier.graphql.model.starwars.Episode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
 
 @Embeddable
 class EmbeddingId implements Serializable {
 
-    @Basic
-    private int id;
+    @ManyToOne
+    @JoinColumn(name = "character_id")
+    private Character character;
 
-    public EmbeddingId(int id) {
-        this.id = id;
+    @Column(name = "episode")
+    private Episode episode;
+
+    public EmbeddingId(Character character, Episode episode) {
+        this.character = character;
+        this.episode = episode;
     }
 
     @Override
@@ -24,11 +31,14 @@ class EmbeddingId implements Serializable {
 
         EmbeddingId that = (EmbeddingId) o;
 
-        return id == that.id;
+        if (character != null ? !character.equals(that.character) : that.character != null) return false;
+        return episode == that.episode;
     }
 
     @Override
     public int hashCode() {
-        return id;
+        int result = character != null ? character.hashCode() : 0;
+        result = 31 * result + (episode != null ? episode.hashCode() : 0);
+        return result;
     }
 }

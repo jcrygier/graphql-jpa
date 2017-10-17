@@ -2,6 +2,7 @@ package org.crygier.graphql.model.embeddings;
 
 import groovy.transform.CompileStatic;
 import org.crygier.graphql.annotation.GraphQLIgnore;
+import org.hibernate.annotations.Target;
 
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -12,6 +13,6 @@ import javax.persistence.Id;
 public class EmbeddingTest {
 
     @EmbeddedId
-    private EmbeddingId id;
+    private EmbeddingId embeddingId;
 
 }
