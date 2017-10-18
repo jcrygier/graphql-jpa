@@ -1,13 +1,13 @@
 package org.crygier.graphql
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.SpringApplicationContextLoader
+import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
 
 @Configuration
-@ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
+@ContextConfiguration(loader = SpringBootContextLoader, classes = TestApplication)
 class ThingQueryExecutorTest extends Specification {
 
     @Autowired

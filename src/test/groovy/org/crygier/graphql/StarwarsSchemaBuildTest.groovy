@@ -3,7 +3,7 @@ package org.crygier.graphql
 import graphql.Scalars
 import graphql.schema.GraphQLSchema
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.SpringApplicationContextLoader
+import org.springframework.boot.test.context.SpringBootContextLoader
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.ContextConfiguration
 import spock.lang.Specification
@@ -11,7 +11,7 @@ import spock.lang.Specification
 import javax.persistence.EntityManager
 
 @Configuration
-@ContextConfiguration(loader = SpringApplicationContextLoader, classes = TestApplication)
+@ContextConfiguration(loader = SpringBootContextLoader, classes = TestApplication)
 class StarwarsSchemaBuildTest extends Specification {
 
     @Autowired
