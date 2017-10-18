@@ -79,7 +79,8 @@ public class GraphQLSchemaBuilder {
     private Stream<GraphQLArgument> getArgument(Attribute attribute) {
         return getAttributeType(attribute)
                 .filter(type -> type instanceof GraphQLInputType)
-                .filter(type -> attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED && type instanceof GraphQLScalarType)
+                .filter(type -> attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.EMBEDDED ||
+                        (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED && type instanceof GraphQLScalarType))
                 .map(type -> {
                     String name;
                     if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED) {
