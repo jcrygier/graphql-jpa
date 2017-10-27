@@ -19,25 +19,39 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class GraphQLSchemaBuilder {
+/**
+ * A wrapper for the {@link GraphQLSchema.Builder}. In addition to exposing the traditional builder functionality,
+ * this class constructs an initial {@link GraphQLSchema} by scanning the given {@link EntityManager} for relevant
+ * JPA entities. This happens at construction time.
+ *
+ * Note: This class should not be accessed outside this library.
+ */
+public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
 
     public static final String PAGINATION_REQUEST_PARAM_NAME = "paginationRequest";
     private static final Logger log = LoggerFactory.getLogger(GraphQLSchemaBuilder.class);
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
+    private final Map<Class, GraphQLType> classCache = new HashMap<>();
+    private final Map<EntityType, GraphQLObjectType> entityCache = new HashMap<>();
 
-    private Map<Class, GraphQLType> classCache = new HashMap<>();
-    private Map<EntityType, GraphQLObjectType> entityCache = new HashMap<>();
-
+    /**
+     * Initialises the builder with the given {@link EntityManager} from which we immediately start to scan for
+     * entities to include in the GraphQL schema.
+     * @param entityManager The manager containing the data models to include in the final GraphQL schema.
+     */
     public GraphQLSchemaBuilder(EntityManager entityManager) {
         this.entityManager = entityManager;
+        super.query(getQueryType());
     }
 
+    /**
+     * @deprecated Use {@link #build()} instead.
+     * @return A freshly built {@link GraphQLSchema}
+     */
+    @Deprecated()
     public GraphQLSchema getGraphQLSchema() {
-        GraphQLSchema.Builder schemaBuilder = GraphQLSchema.newSchema();
-        schemaBuilder.query(getQueryType());
-
-        return schemaBuilder.build();
+        return super.build();
     }
 
     GraphQLObjectType getQueryType() {
