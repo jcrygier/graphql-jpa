@@ -5,10 +5,10 @@
         "subject": "jcrygier"
     },
     "version": {
-        "name": "0.5"
+        "name": "0.6"
     },
     "files": [
-        {"includePattern": "build/libs/(.*)", "excludePattern": ".*/do-not-deploy/.*", "uploadPattern": "com/crygier/graphql-jpa/0.5/$1"}
+        {"includePattern": "build/libs/(.*)", "excludePattern": ".*/do-not-deploy/.*", "uploadPattern": "com/crygier/graphql-jpa/0.6/$1"}
     ],
     "publish": true
 }
