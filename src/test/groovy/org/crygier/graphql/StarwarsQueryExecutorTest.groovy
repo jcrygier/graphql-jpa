@@ -88,6 +88,32 @@ class StarwarsQueryExecutorTest extends Specification {
         then:
         result == expected
     }
+	
+	def 'Nullable ManyToOne Join'() {
+		given:
+		def query = '''
+        {
+            Human(id: "1004") {
+                name
+                homePlanet
+                favoriteDroid {
+                    name
+                }
+            }
+        }
+        '''
+		def expected = [
+				Human: [
+						[name:'Wilhuff Tarkin', homePlanet:null, favoriteDroid:null]
+				]
+		]
+
+		when:
+		def result = executor.execute(query).data
+
+		then:
+		result == expected
+	}
 
     def 'OneToMany Join by ID'() {
         given:
@@ -358,10 +384,10 @@ class StarwarsQueryExecutorTest extends Specification {
         '''
         def expected = [
                 Human: [
-                        [ name: 'Darth Vader', gender: [ description: "Male" ] ],
-                        [ name: 'Wilhuff Tarkin', gender: [ description: "Male" ] ],
-                        [ name: 'Han Solo', gender: [ description: "Male" ] ],
+                        [ name: 'Darth Vader', gender: [ description: "Male" ] ],                       
                         [ name: 'Luke Skywalker', gender: [ description: "Male" ]],
+                        [ name: 'Han Solo', gender: [ description: "Male" ] ],
+						[ name: 'Wilhuff Tarkin', gender: [ description: "Male" ]]
                 ]
         ]
 
