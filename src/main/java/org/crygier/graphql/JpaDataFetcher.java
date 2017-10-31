@@ -63,7 +63,7 @@ public class JpaDataFetcher implements DataFetcher {
                     // Check if it's an object and the foreign side is One.  Then we can eagerly fetch causing an inner join instead of 2 queries
                     if (fieldPath.getModel() instanceof SingularAttribute) {
                         SingularAttribute attribute = (SingularAttribute) fieldPath.getModel();
-                        if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_ONE || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_ONE)
+                        if (!attribute.isOptional() && (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_ONE || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_ONE))
                             root.fetch(selectedField.getName());
                     }
                 }
