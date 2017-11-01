@@ -105,3 +105,10 @@ insert into character_appears_in (character_id, appears_in) values
 -- Things
 insert into thing (id, type) values
     ('2D1EBC5B7D2741979CF0E84451C5BBB1', 'Thing1');
+
+-- User
+insert into user(id, first_name, last_name) values
+	('1000','Bob', 'Austin');
+	
+insert into spaceship(id, name, createddate,createduser) values
+	('1000','X-Wing', sysdate, '1000');

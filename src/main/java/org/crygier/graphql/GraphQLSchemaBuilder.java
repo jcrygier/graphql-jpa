@@ -33,6 +33,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
 
     private final EntityManager entityManager;
     private final Map<Class, GraphQLType> classCache = new HashMap<>();
+    private final Map<EmbeddableType<?>, GraphQLObjectType> embeddableCache = new HashMap<>();
     private final Map<EntityType, GraphQLObjectType> entityCache = new HashMap<>();
 
     /**
@@ -58,6 +59,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
         GraphQLObjectType.Builder queryType = GraphQLObjectType.newObject().name("QueryType_JPA").description("All encompassing schema for this JPA environment");
         queryType.fields(entityManager.getMetamodel().getEntities().stream().filter(this::isNotIgnored).map(this::getQueryFieldDefinition).collect(Collectors.toList()));
         queryType.fields(entityManager.getMetamodel().getEntities().stream().filter(this::isNotIgnored).map(this::getQueryFieldPageableDefinition).collect(Collectors.toList()));
+        queryType.fields(entityManager.getMetamodel().getEmbeddables().stream().filter(this::isNotIgnored).map(this::getQueryEmbeddedFieldDefinition).collect(Collectors.toList()));
 
         return queryType.build();
     }
@@ -69,6 +71,16 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                 .type(new GraphQLList(getObjectType(entityType)))
                 .dataFetcher(new JpaDataFetcher(entityManager, entityType))
                 .argument(entityType.getAttributes().stream().filter(this::isValidInput).filter(this::isNotIgnored).flatMap(this::getArgument).collect(Collectors.toList()))
+                .build();
+    }
+    
+    GraphQLFieldDefinition getQueryEmbeddedFieldDefinition(EmbeddableType<?> embeddableType) {
+    	String embeddedName = embeddableType.getJavaType().getSimpleName();
+        return GraphQLFieldDefinition.newFieldDefinition()
+                .name(embeddedName)
+                .description(getSchemaDocumentation(embeddableType.getJavaType()))
+                .type(new GraphQLList(getObjectType(embeddableType)))
+                .argument(embeddableType.getAttributes().stream().filter(this::isValidInput).filter(this::isNotIgnored).flatMap(this::getArgument).collect(Collectors.toList()))
                 .build();
     }
 
@@ -96,12 +108,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                 .filter(type -> attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.EMBEDDED ||
                         (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED && type instanceof GraphQLScalarType))
                 .map(type -> {
-                    String name;
-                    if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED) {
-                        name = type.getName();
-                    } else {
-                        name = attribute.getName();
-                    }
+                    String name = attribute.getName();                   
 
                     return GraphQLArgument.newArgument()
                             .name(name)
@@ -121,6 +128,23 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                 .build();
 
         entityCache.put(entityType, answer);
+
+        return answer;
+    }
+    
+    GraphQLObjectType getObjectType(EmbeddableType<?> embeddableType) {
+    	
+        if (embeddableCache.containsKey(embeddableType))
+            return embeddableCache.get(embeddableType);
+
+        String embeddableName= embeddableType.getJavaType().getSimpleName();
+        GraphQLObjectType answer = GraphQLObjectType.newObject()
+                .name(embeddableName)
+                .description(getSchemaDocumentation(embeddableType.getJavaType()))
+                .fields(embeddableType.getAttributes().stream().filter(this::isNotIgnored).flatMap(this::getObjectField).collect(Collectors.toList()))
+                .build();
+
+        embeddableCache.put(embeddableType, answer);
 
         return answer;
     }
@@ -147,12 +171,8 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                         });
                     }
 
-                    String name;
-                    if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED) {
-                        name = type.getName();
-                    } else {
-                        name = attribute.getName();
-                    }
+                    String name = attribute.getName();
+                    
 
                     return GraphQLFieldDefinition.newFieldDefinition()
                             .name(name)
@@ -217,9 +237,8 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
             Type foreignType = ((PluralAttribute) attribute).getElementType();
             return Stream.of(new GraphQLList(getTypeFromJavaType(foreignType.getJavaType())));
         } else if (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED) {
-            EmbeddableType embeddableType = (EmbeddableType) ((SingularAttribute) attribute).getType();
-            Stream<Attribute> s = (Stream<Attribute>) embeddableType.getAttributes().stream();
-            return s.flatMap(this::getAttributeType);
+            EmbeddableType<?> embeddableType = (EmbeddableType<?>) ((SingularAttribute<?,?>) attribute).getType();
+            return Stream.of(new GraphQLTypeReference(embeddableType.getJavaType().getSimpleName()));
         }
 
         final String declaringType = attribute.getDeclaringType().getJavaType().getName(); // fully qualified name of the entity class
@@ -254,6 +273,10 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
 
     private boolean isNotIgnored(Attribute attribute) {
         return isNotIgnored(attribute.getJavaMember()) && isNotIgnored(attribute.getJavaType());
+    }
+    
+    private boolean isNotIgnored(EmbeddableType<?> embeddableType) {
+        return isNotIgnored(embeddableType.getJavaType());
     }
 
     private boolean isNotIgnored(EntityType entityType) {

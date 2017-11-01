@@ -24,13 +24,13 @@ class EmbeddedSchemaBuildTest extends Specification {
         builder = new GraphQLSchemaBuilder(entityManager);
     }
 
-    def 'Correctly flattens embedded keys into two distinct fields'() {
+    def 'Correctly read embedded keys'() {
         when:
         def embeddingEntity = entityManager.getMetamodel().getEntities().stream().filter { e -> e.name == "EmbeddingTest"}.findFirst().get()
         def graphQlObject = builder.getObjectType(embeddingEntity)
 
         then:
-        graphQlObject.fieldDefinitions.size() == 3
+        graphQlObject.fieldDefinitions.size() == 1
     }
 
     def 'Correctly extract embedded basic query fields'() {
@@ -39,7 +39,7 @@ class EmbeddedSchemaBuildTest extends Specification {
         def graphQlFieldDefinition = builder.getQueryFieldDefinition(embeddingEntity)
 
         then:
-        graphQlFieldDefinition.arguments.size() == 1
+        graphQlFieldDefinition.arguments.size() == 0
     }
 
     def 'Correctly extract a whole moddel with embeddings'() {
