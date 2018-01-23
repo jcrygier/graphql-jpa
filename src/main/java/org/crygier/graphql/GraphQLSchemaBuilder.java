@@ -13,6 +13,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -207,6 +208,8 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
             return JavaScalars.GraphQLDate;
         else if (LocalDateTime.class.isAssignableFrom(javaType))
             return JavaScalars.GraphQLLocalDateTime;
+        else if (Instant.class.isAssignableFrom(javaType))
+            return JavaScalars.GraphQLInstant;
         else if (LocalDate.class.isAssignableFrom(javaType))
             return JavaScalars.GraphQLLocalDate;
         else if (javaType.isEnum()) {

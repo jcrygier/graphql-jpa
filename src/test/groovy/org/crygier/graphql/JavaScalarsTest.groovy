@@ -51,6 +51,19 @@ class JavaScalarsTest extends Specification {
         result.second == 15
     }
 
+    def 'Instant to Long'() {
+        given:
+        Coercing coercing = JavaScalars.GraphQLInstant.getCoercing()
+        final instant = Instant.now()
+
+        when:
+        def result = coercing.serialize(instant)
+
+        then:
+        result instanceof Long
+        result == instant.epochSecond
+    }
+
     def 'Long to LocalDate'() {
         given:
         Coercing coercing = JavaScalars.GraphQLLocalDate.getCoercing()
