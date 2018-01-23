@@ -3,6 +3,7 @@ package org.crygier.graphql;
 import graphql.language.IntValue;
 import graphql.language.StringValue;
 import graphql.schema.Coercing;
+import graphql.schema.CoercingSerializeException;
 import graphql.schema.GraphQLScalarType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,38 @@ public class JavaScalars {
                 return null;
             }
         }
+    });
+
+    public static GraphQLScalarType GraphQLInstant = new GraphQLScalarType("Instant", "Date type", new Coercing<Instant, Long>() {
+
+        @Override
+        public Long serialize(Object input) {
+            if (input instanceof Instant) {
+                return ((Instant) input).getEpochSecond();
+            }
+            throw new CoercingSerializeException(
+                    "Expected type 'Instant' but was '" + input.getClass().getSimpleName() + "'.");
+        }
+
+        @Override
+        public Instant parseValue(Object input) {
+            if (input instanceof Long) {
+                return Instant.ofEpochSecond((Long) input);
+            } else if (input instanceof Integer) {
+                return Instant.ofEpochSecond((Integer) input);
+            }
+            throw new CoercingSerializeException(
+                    "Expected type 'Long' or 'Integer' but was '" + input.getClass().getSimpleName() + "'.");
+        }
+
+        @Override
+        public Instant parseLiteral(Object input) {
+            if (input instanceof IntValue) {
+                return Instant.ofEpochSecond(((IntValue) input).getValue().longValue());
+            }
+            return null;
+        }
+
     });
 
     public static GraphQLScalarType GraphQLLocalDate = new GraphQLScalarType("LocalDate", "Date type", new Coercing() {
