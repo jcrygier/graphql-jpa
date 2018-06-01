@@ -4,8 +4,10 @@ import graphql.language.*;
 import graphql.schema.*;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import javax.persistence.criteria.Selection;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.PluralAttribute;
@@ -30,8 +32,9 @@ public class JpaDataFetcher implements DataFetcher {
 
     protected TypedQuery getQuery(DataFetchingEnvironment environment, Field field) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Object> query = cb.createQuery((Class) entityType.getJavaType());
+        CriteriaQuery<Tuple> query = cb.createTupleQuery();
         Root root = query.from(entityType);
+        ArrayList<Selection<?>> selections = new ArrayList<>();
 
         List<Argument> arguments = new ArrayList<>();
 
@@ -62,6 +65,7 @@ public class JpaDataFetcher implements DataFetcher {
 
                     // Check if it's an object and the foreign side is One.  Then we can eagerly fetch causing an inner join instead of 2 queries
                     if (fieldPath.getModel() instanceof SingularAttribute) {
+                        selections.add(fieldPath.alias(selectedField.getName()));
                         SingularAttribute attribute = (SingularAttribute) fieldPath.getModel();
                         if (!attribute.isOptional() && (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.MANY_TO_ONE || attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.ONE_TO_ONE))
                             root.fetch(selectedField.getName());
@@ -71,9 +75,10 @@ public class JpaDataFetcher implements DataFetcher {
         });
 
         arguments.addAll(field.getArguments());
+        query.multiselect(selections);
 
-        List<Predicate> predicates = arguments.stream().map(it -> getPredicate(cb, root, environment, it)).collect(Collectors.toList());
-        query.where(predicates.toArray(new Predicate[predicates.size()]));
+
+        query.where(arguments.stream().map(it -> getPredicate(cb, root, environment, it)).toArray(Predicate[]::new));
 
         return entityManager.createQuery(query.distinct(true));
     }

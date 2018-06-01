@@ -74,7 +74,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                 .argument(entityType.getAttributes().stream().filter(this::isValidInput).filter(this::isNotIgnored).flatMap(this::getArgument).collect(Collectors.toList()))
                 .build();
     }
-    
+
     GraphQLFieldDefinition getQueryEmbeddedFieldDefinition(EmbeddableType<?> embeddableType) {
     	String embeddedName = embeddableType.getJavaType().getSimpleName();
         return GraphQLFieldDefinition.newFieldDefinition()
@@ -109,7 +109,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                 .filter(type -> attribute.getPersistentAttributeType() != Attribute.PersistentAttributeType.EMBEDDED ||
                         (attribute.getPersistentAttributeType() == Attribute.PersistentAttributeType.EMBEDDED && type instanceof GraphQLScalarType))
                 .map(type -> {
-                    String name = attribute.getName();                   
+                    String name = attribute.getName();
 
                     return GraphQLArgument.newArgument()
                             .name(name)
@@ -132,9 +132,9 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
 
         return answer;
     }
-    
+
     GraphQLObjectType getObjectType(EmbeddableType<?> embeddableType) {
-    	
+
         if (embeddableCache.containsKey(embeddableType))
             return embeddableCache.get(embeddableType);
 
@@ -173,10 +173,11 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
                     }
 
                     String name = attribute.getName();
-                    
+
 
                     return GraphQLFieldDefinition.newFieldDefinition()
                             .name(name)
+                            .dataFetcher(new JpaTupleDataFetcher(name))
                             .description(getSchemaDocumentation(attribute.getJavaMember()))
                             .type((GraphQLOutputType) type)
                             .argument(arguments)
@@ -277,7 +278,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
     private boolean isNotIgnored(Attribute attribute) {
         return isNotIgnored(attribute.getJavaMember()) && isNotIgnored(attribute.getJavaType());
     }
-    
+
     private boolean isNotIgnored(EmbeddableType<?> embeddableType) {
         return isNotIgnored(embeddableType.getJavaType());
     }
