@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -27,7 +28,7 @@ public class GraphQLExecutor {
     private GraphQLSchema.Builder builder;
 
     protected GraphQLExecutor() {
-        createGraphQL();
+        createGraphQL(null);
     }
 
     /**
@@ -38,14 +39,32 @@ public class GraphQLExecutor {
      */
     public GraphQLExecutor(EntityManager entityManager) {
         this.entityManager = entityManager;
-        createGraphQL();
+        createGraphQL(null);
+    }
+
+    /**
+     * Creates a read-only GraphQLExecutor using the entities discovered from the given {@link EntityManager}.
+     *
+     * @param entityManager The entity manager from which the JPA classes annotated with
+     *                      {@link javax.persistence.Entity} is extracted as {@link GraphQLSchema} objects.
+     * @param attributeMappers Custom {@link AttributeMapper} list, if you need any non-standard mappings.
+     */
+    public GraphQLExecutor(EntityManager entityManager, Collection<AttributeMapper> attributeMappers) {
+        this.entityManager = entityManager;
+        createGraphQL(attributeMappers);
     }
 
     @PostConstruct
     protected synchronized void createGraphQL() {
+        createGraphQL(null);
+    }
+
+    protected synchronized void createGraphQL(Collection<AttributeMapper> attributeMappers) {
         if (entityManager != null) {
-            if (builder == null) {
+            if (builder == null && attributeMappers == null) {
                 this.builder = new GraphQLSchemaBuilder(entityManager);
+            } else if (builder == null) {
+                this.builder = new GraphQLSchemaBuilder(entityManager, attributeMappers);
             }
             this.graphQLSchema = builder.build();
             this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
@@ -97,7 +116,21 @@ public class GraphQLExecutor {
      */
     public GraphQLExecutor updateSchema(GraphQLSchema.Builder builder) {
         this.builder = builder;
-        createGraphQL();
+        createGraphQL(null);
+        return this;
+    }
+
+    /**
+     * Uses the given builder to re-create and replace the {@link GraphQLSchema}
+     * that this executor uses to execute its queries.
+     *
+     * @param builder The builder to recreate the current {@link GraphQLSchema} and {@link GraphQL} instances.
+     * @param attributeMappers Custom {@link AttributeMapper} list, if you need any non-standard mappings.
+     * @return The same executor but with a new {@link GraphQL} schema.
+     */
+    public GraphQLExecutor updateSchema(GraphQLSchema.Builder builder, Collection<AttributeMapper> attributeMappers) {
+        this.builder = builder;
+        createGraphQL(attributeMappers);
         return this;
     }
 

@@ -1,14 +1,32 @@
 package org.crygier.graphql;
 
 import graphql.Scalars;
-import graphql.schema.*;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLInputType;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLScalarType;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
 import org.crygier.graphql.annotation.GraphQLIgnore;
 import org.crygier.graphql.annotation.SchemaDocumentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.metamodel.*;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.EmbeddableType;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.ManagedType;
+import javax.persistence.metamodel.PluralAttribute;
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.Type;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -16,7 +34,14 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +61,7 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
     private final Map<Class, GraphQLType> classCache = new HashMap<>();
     private final Map<EmbeddableType<?>, GraphQLObjectType> embeddableCache = new HashMap<>();
     private final Map<EntityType, GraphQLObjectType> entityCache = new HashMap<>();
+    private final List<AttributeMapper> attributeMappers = new ArrayList<>();
 
     /**
      * Initialises the builder with the given {@link EntityManager} from which we immediately start to scan for
@@ -44,7 +70,36 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
      */
     public GraphQLSchemaBuilder(EntityManager entityManager) {
         this.entityManager = entityManager;
+
+        populateStandardAttributeMappers();
+
         super.query(getQueryType());
+    }
+
+    public GraphQLSchemaBuilder(EntityManager entityManager, Collection<AttributeMapper> attributeMappers) {
+        this.entityManager = entityManager;
+
+        this.attributeMappers.addAll(attributeMappers);
+        populateStandardAttributeMappers();
+
+        super.query(getQueryType());
+    }
+
+    private void populateStandardAttributeMappers() {
+        attributeMappers.add(createStandardAttributeMapper(UUID.class, JavaScalars.GraphQLUUID));
+        attributeMappers.add(createStandardAttributeMapper(Date.class, JavaScalars.GraphQLDate));
+        attributeMappers.add(createStandardAttributeMapper(LocalDateTime.class, JavaScalars.GraphQLLocalDateTime));
+        attributeMappers.add(createStandardAttributeMapper(Instant.class, JavaScalars.GraphQLInstant));
+        attributeMappers.add(createStandardAttributeMapper(LocalDate.class, JavaScalars.GraphQLLocalDate));
+    }
+
+    private AttributeMapper createStandardAttributeMapper(final Class<?> assignableClass, final GraphQLType type) {
+        return (javaType) -> {
+            if (assignableClass.isAssignableFrom(javaType))
+                return Optional.of(type);
+
+            return Optional.empty();
+        };
     }
 
     /**
@@ -189,10 +244,15 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
     }
 
     private GraphQLType getBasicAttributeType(Class javaType) {
-        if (String.class.isAssignableFrom(javaType))
+        // First check our 'standard' and 'customized' Attribute Mappers.  Use them if possible
+        Optional<AttributeMapper> customMapper = attributeMappers.stream()
+                .filter(it -> it.getBasicAttributeType(javaType).isPresent())
+                .findFirst();
+
+        if (customMapper.isPresent())
+            return customMapper.get().getBasicAttributeType(javaType).get();
+        else if (String.class.isAssignableFrom(javaType))
             return Scalars.GraphQLString;
-        else if (UUID.class.isAssignableFrom(javaType))
-            return JavaScalars.GraphQLUUID;
         else if (Integer.class.isAssignableFrom(javaType) || int.class.isAssignableFrom(javaType))
             return Scalars.GraphQLInt;
         else if (Short.class.isAssignableFrom(javaType) || short.class.isAssignableFrom(javaType))
@@ -204,14 +264,6 @@ public class GraphQLSchemaBuilder extends GraphQLSchema.Builder {
             return Scalars.GraphQLLong;
         else if (Boolean.class.isAssignableFrom(javaType) || boolean.class.isAssignableFrom(javaType))
             return Scalars.GraphQLBoolean;
-        else if (Date.class.isAssignableFrom(javaType))
-            return JavaScalars.GraphQLDate;
-        else if (LocalDateTime.class.isAssignableFrom(javaType))
-            return JavaScalars.GraphQLLocalDateTime;
-        else if (Instant.class.isAssignableFrom(javaType))
-            return JavaScalars.GraphQLInstant;
-        else if (LocalDate.class.isAssignableFrom(javaType))
-            return JavaScalars.GraphQLLocalDate;
         else if (javaType.isEnum()) {
             return getTypeFromJavaType(javaType);
         } else if (BigDecimal.class.isAssignableFrom(javaType)) {
